@@ -9,7 +9,7 @@ let isCounting = false;
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 
 // ★調整ポイント★ 誤判定を防ぐため、高い値から調整を始めます (例: 2.5)
-const threshold = 6.0; 
+const threshold = 10.0; 
 
 // 歩数カウントを開始する関数
 function startCounting() {
