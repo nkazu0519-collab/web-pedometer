@@ -9,7 +9,7 @@ let isCounting = false;
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 
 // 歩行を検知するための閾値
-const threshold = 1.2;
+const threshold = 2.5;
 
 // 歩数カウントを開始する関数
 function startCounting() {
