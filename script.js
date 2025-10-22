@@ -8,14 +8,16 @@ let steps = 0;
 let isCounting = false;
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 
-// ★調整ポイント★ 誤判定を防ぐため、高い値から調整を始めます (例: 2.5)
-const threshold = 10.0; 
+// ★調整ポイント★ 誤判定を防ぐため、高い値から調整を始める
+const THRESHOLD = 10.0;
 
 // 歩数カウントを開始する関数
 function startCounting() {
     if (isCounting) return;
     isCounting = true;
     steps = 0;
+    // ★追加★　lastAccelerationをリセットする
+    lastAcceleration = {x: 0, y: 0, z: 0};
     stepCountElement.textContent = steps;
 
     // iOSの許可を求めるためのコード
@@ -56,16 +58,18 @@ function handleMotion(event) {
     const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
     // 閾値を超えたら歩数としてカウント
-    if (magnitude > threshold) {
+    if (magnitude > THRESHOLD) {
         steps++;
         stepCountElement.textContent = steps;
     }
 
     // 現在の加速度を次のサイクルのために保存
+    const smoothingFactor = 0.8; //0.0~1.0の間で設定。1.0だとフィルタリングなし。
+
     lastAcceleration = {
-        x: acceleration.x,
-        y: acceleration.y,
-        z: acceleration.z
+        x: lastAcceleration.x * smoothingFactor + acceleration.x * (1 - smoothingFactor),
+        y: lastAcceleration.y * smoothingFactor + acceleration.y * (1 - smoothingFactor),
+        z: lastAcceleration.z * smoothingFactor + acceleration.z * (1 - smoothingFactor),
     };
 }
 
