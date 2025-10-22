@@ -3,16 +3,13 @@ const stepCountElement = document.getElementById('step-count');
 const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
 
-// ★デバッグ表示用の要素も取得します (index.htmlに <p id="debug-log">Debug: 0.00</p> を追加済みと仮定)
-const debugLog = document.getElementById('debug-log');
-
 // 変数の初期設定
 let steps = 0;
 let isCounting = false;
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 
 // ★調整ポイント★ 誤判定を防ぐため、高い値から調整を始めます (例: 2.5)
-const threshold = 2.5; 
+const threshold = 4.0; 
 
 // 歩数カウントを開始する関数
 function startCounting() {
@@ -44,9 +41,6 @@ function stopCounting() {
     isCounting = false;
     window.removeEventListener('devicemotion', handleMotion);
     console.log('計測を停止しました');
-    if (debugLog) {
-        debugLog.textContent = '計測停止';
-    }
 }
 
 // 動きのデータを処理する関数
@@ -60,11 +54,6 @@ function handleMotion(event) {
 
     // 加速度の大きさ（ベクトルの長さ）を計算
     const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-    // ★デバッグ表示★ リアルタイムで変動値を表示
-    if (debugLog) {
-        debugLog.textContent = `Mag: ${magnitude.toFixed(2)} | Steps: ${steps}`;
-    }
 
     // 閾値を超えたら歩数としてカウント
     if (magnitude > threshold) {
