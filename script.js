@@ -16,7 +16,8 @@ function startCounting() {
     if (isCounting) return;
     isCounting = true;
     steps = 0;
-    // ★追加★　lastAccelerationをリセットする
+    // ★追加★　lastAccelerationを重力加速度で初期化する
+    //　これにより、計測開始時の急なノイズ発生を防ぐ（デバイスが静止していると仮定）
     lastAcceleration = {x: 0, y: 0, z: 0};
     stepCountElement.textContent = steps;
 
