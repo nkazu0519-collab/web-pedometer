@@ -8,17 +8,18 @@ let steps = 0;
 let isCounting = false;
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 
-// ★調整ポイント★ 誤判定を防ぐため、高い値から調整を始める
-const THRESHOLD = 10.0;
+// ★調整ポイント★ 誤判定を防ぐための閾値 (定数として定義)
+const THRESHOLD = 10.0; 
+// センサーノイズを滑らかにするための係数 (定数として定義)
+const SMOOTHING_FACTOR = 0.8; 
 
 // 歩数カウントを開始する関数
 function startCounting() {
     if (isCounting) return;
     isCounting = true;
     steps = 0;
-    // ★追加★　lastAccelerationを重力加速度で初期化する
-    //　これにより、計測開始時の急なノイズ発生を防ぐ（デバイスが静止していると仮定）
-    lastAcceleration = {x: 0, y: 0, z: 0};
+    // ★修正点★ lastAccelerationをリセットし、計測開始時のノイズを防止
+    lastAcceleration = { x: 0, y: 0, z: 0 };
     stepCountElement.textContent = steps;
 
     // iOSの許可を求めるためのコード
@@ -64,13 +65,11 @@ function handleMotion(event) {
         stepCountElement.textContent = steps;
     }
 
-    // 現在の加速度を次のサイクルのために保存
-    const smoothingFactor = 0.8; //0.0~1.0の間で設定。1.0だとフィルタリングなし。
-
+    // 現在の加速度をローパスフィルタで滑らかにし、次のサイクルのために保存
     lastAcceleration = {
-        x: lastAcceleration.x * smoothingFactor + acceleration.x * (1 - smoothingFactor),
-        y: lastAcceleration.y * smoothingFactor + acceleration.y * (1 - smoothingFactor),
-        z: lastAcceleration.z * smoothingFactor + acceleration.z * (1 - smoothingFactor),
+        x: lastAcceleration.x * SMOOTHING_FACTOR + acceleration.x * (1 - SMOOTHING_FACTOR),
+        y: lastAcceleration.y * SMOOTHING_FACTOR + acceleration.y * (1 - SMOOTHING_FACTOR),
+        z: lastAcceleration.z * SMOOTHING_FACTOR + acceleration.z * (1 - SMOOTHING_FACTOR),
     };
 }
 
