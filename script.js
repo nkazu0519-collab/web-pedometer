@@ -17,7 +17,21 @@ function startCounting() {
     isCounting = true;
     steps = 0;
     stepCountElement.textContent = steps;
-    window.addEventListener('devicemotion', handleMotion);
+
+    // 【★重要：iOSで許可ダイアログを表示させるコード★】
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission().then(permissionState => {
+            if (permissionState === 'granted') {
+                window.addEventListener('devicemotion', handleMotion);
+            } else {
+                alert('センサーへのアクセスが拒否されました。設定を確認してください。');
+                isCounting = false; // 許可されなかったら計測を中止
+            }
+        }).catch(console.error);
+    } else {
+        // Androidなど、許可が不要な環境向け
+        window.addEventListener('devicemotion', handleMotion);
+    }
     console.log('計測を開始しました');
 }
 
