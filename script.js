@@ -1,0 +1,60 @@
+// HTML要素を取得
+const stepCountElement = document.getElementById('step-count');
+const startButton = document.getElementById('start-button');
+const stopButton = document.getElementById('stop-button');
+
+// 変数の初期設定
+let steps = 0;
+let isCounting = false;
+let lastAcceleration = { x: 0, y: 0, z: 0 };
+
+// 歩行を検知するための閾値
+const threshold = 1.2;
+
+// 歩数カウントを開始する関数
+function startCounting() {
+    if (isCounting) return;
+    isCounting = true;
+    steps = 0;
+    stepCountElement.textContent = steps;
+    window.addEventListener('devicemotion', handleMotion);
+    console.log('計測を開始しました');
+}
+
+// 歩数カウントを停止する関数
+function stopCounting() {
+    if (!isCounting) return;
+    isCounting = false;
+    window.removeEventListener('devicemotion', handleMotion);
+    console.log('計測を停止しました');
+}
+
+// 動きのデータを処理する関数
+function handleMotion(event) {
+    const acceleration = event.accelerationIncludingGravity;
+
+    // 現在の加速度と前回の加速度の差を計算
+    const dx = acceleration.x - lastAcceleration.x;
+    const dy = acceleration.y - lastAcceleration.y;
+    const dz = acceleration.z - lastAcceleration.z;
+
+    // 加速度の大きさ（ベクトルの長さ）を計算
+    const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    // 閾値を超えたら歩数としてカウント
+    if (magnitude > threshold) {
+        steps++;
+        stepCountElement.textContent = steps;
+    }
+
+    // 現在の加速度を次のサイクルのために保存
+    lastAcceleration = {
+        x: acceleration.x,
+        y: acceleration.y,
+        z: acceleration.z
+    };
+}
+
+// ボタンにイベントリスナーを追加
+startButton.addEventListener('click', startCounting);
+stopButton.addEventListener('click', stopCounting);
