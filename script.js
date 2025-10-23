@@ -6,20 +6,31 @@ const stopButton = document.getElementById('stop-button');
 // 変数の初期設定
 let steps = 0;
 let isCounting = false;
+let lastStepTime = 0; // 前回の歩数記録時刻
+let gravity = { x: 0, y: 0, z: 0};
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 
-// ★調整ポイント★ 誤判定を防ぐための閾値 (定数として定義)
-const THRESHOLD = 10.0; 
-// センサーノイズを滑らかにするための係数 (定数として定義)
-const SMOOTHING_FACTOR = 0.8; 
+// 定数（チューニング用）
+const THRESHOLD = 10.0; // 歩数判定の閾値（大きいほど厳しい）
+const STEP_INTERVAL = 400; // 歩行感覚の最小時間(ms)
+const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
 
 // 歩数カウントを開始する関数
 function startCounting() {
     if (isCounting) return;
+
+    // ★オプション★
+    // 計測をリセットしたい場合だけ以下を有効にする
+    // steps = 0;
+
+    // センサー非対応端末チェック
+    if (!('DeviceMotionEvent' in window)) {
+        alert('お使いの端末では歩数計機能が利用できません。');
+        return;
+    }
+
     isCounting = true;
-    steps = 0;
-    // ★修正点★ lastAccelerationをリセットし、計測開始時のノイズを防止
-    lastAcceleration = { x: 0, y: 0, z: 0 };
+    lastAcceleration = { x: 0, y: 0, z: 0};
     stepCountElement.textContent = steps;
 
     // iOSの許可を求めるためのコード
@@ -28,7 +39,7 @@ function startCounting() {
             if (permissionState === 'granted') {
                 window.addEventListener('devicemotion', handleMotion);
             } else {
-                alert('センサーアクセスが拒否されました。設定を確認してください。');
+                alert('センサーアクセスが拒否されました。iPhoneの設定で「モーションと方向のアクセス」を有効にしてください。');
                 isCounting = false;
             }
         }).catch(console.error);
@@ -49,28 +60,38 @@ function stopCounting() {
 
 // 動きのデータを処理する関数
 function handleMotion(event) {
-    const acceleration = event.accelerationIncludingGravity;
+    const a = event.accelerationIncludingGravity;
+    if (!a) return; // データが無い場合スキップ
 
-    // 現在の加速度と前回の加速度の差を計算
-    const dx = acceleration.x - lastAcceleration.x;
-    const dy = acceleration.y - lastAcceleration.y;
-    const dz = acceleration.z - lastAcceleration.z;
+    // --- 重力成分の分離 ---
+    gravity.x = ALPHA * gravity.x + (1 - ALPHA) * a.x;
+    gravity.y = ALPHA * gravity.y + (1 - ALPHA) * a.y;
+    gravity.z = ALPHA * gravity.z + (1 - ALPHA) * a.z;
 
-    // 加速度の大きさ（ベクトルの長さ）を計算
-    const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    // --- 重力を除いた純粋な加速度 ---
+    const linearAcceleration = {
+        x: a.x - gravity.x,
+        y: a.y - gravity.y,
+        z: a.z - gravity.z
+    };
 
-    // 閾値を超えたら歩数としてカウント
-    if (magnitude > THRESHOLD) {
+    // --- ベクトルの大きさ（動きの強さ） ---
+    const magnitude = Math.sqrt(
+        linearAcceleration.x ** 2 +
+        linearAcceleration.y ** 2 +
+        linearAcceleration.z ** 2
+    );
+
+    // --- デバッグ用：コンソールに出すと調整しやすい ---
+    // console.log('magnitude:', magnitude);
+
+    // --- 歩数判定 ---
+    const now = Date.now();
+    if (magnitude > THRESHOLD && now - lastStepTime > STEP_INTERVAL) {
         steps++;
         stepCountElement.textContent = steps;
+        lastStepTime = now;
     }
-
-    // 現在の加速度をローパスフィルタで滑らかにし、次のサイクルのために保存
-    lastAcceleration = {
-        x: lastAcceleration.x * SMOOTHING_FACTOR + acceleration.x * (1 - SMOOTHING_FACTOR),
-        y: lastAcceleration.y * SMOOTHING_FACTOR + acceleration.y * (1 - SMOOTHING_FACTOR),
-        z: lastAcceleration.z * SMOOTHING_FACTOR + acceleration.z * (1 - SMOOTHING_FACTOR),
-    };
 }
 
 // ボタンにイベントリスナーを追加
