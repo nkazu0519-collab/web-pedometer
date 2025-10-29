@@ -95,6 +95,15 @@ function handleMotion(event) {
     const a = event.accelerationIncludingGravity;
     if (!a) return; // データが無い場合スキップ
 
+// 進捗バーを更新
+function updateProgress() {
+    const progress = document.getElementById("progress");
+    if (progress) {
+        progress.value = steps;
+    }
+}
+
+
     // --- 重力成分の分離 ---
     gravity.x = ALPHA * gravity.x + (1 - ALPHA) * a.x;
     gravity.y = ALPHA * gravity.y + (1 - ALPHA) * a.y;
@@ -123,6 +132,25 @@ function handleMotion(event) {
         steps++;
         stepCountElement.textContent = steps;
         lastStepTime = now;
+
+        checkMission();
+        updateProgress();
+    }
+}
+
+function checkMission() {
+    const quest = document.getElementById("quest1");
+    const msg = document.getElementById("message");
+
+    if (steps >= 5000) {
+        // クエスト表示を書き換え
+        quest.textContent = "5000歩 → ✅達成！";
+
+        // メッセージ表示
+        msg.textContent = "やったね！クエスト達成！";
+
+        // 2回以上反応しないように return
+        return;
     }
 }
 
