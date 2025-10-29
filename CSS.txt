@@ -1,0 +1,86 @@
+CSS:
+
+body {
+    font-family: Arial, sans-serif;
+    /* Flexboxで縦に並べ、要素全体を中央に集める */
+    display: flex; 
+    flex-direction: column;
+    align-items: center; /* 水平中央寄せ */
+    justify-content: center;
+
+    /* 追加 */
+    font-family: Arial, sans-serif;
+    font-size: 18px; /* 基本フォントサイズを大きく */
+    margin: 0;
+
+    min-height: 100vh;
+    margin: 0;
+    background-color: rgb(191, 255, 196);
+    overflow-x: hidden;
+    text-align: center;
+}
+
+/*タイトル*/
+h1 {
+    color: #333;
+    font-size: 8vw;
+    margin-bottom: 3vh;
+    margin-top: 0;
+}
+
+body > p {
+    font-size: 5vw;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 1vh;
+}
+
+/*歩数カウント*/
+#step-count {
+    font-size: 15vw;
+    font-weight: bold;
+    color: #007bff;
+    margin: 0;
+    display: block;
+}
+
+/*ボタン群を中央下部に配置*/
+#button-container {
+    display: flex;
+    flex-direction: row; /* 横並び */
+    justify-content: center; /* ボタンを中央寄せ */
+    gap: 3vw;
+    margin-bottom: 0vh; 
+    width: 100%;
+}
+
+/*ボタンの共通スタイル*/
+button {
+    width: 10vh;
+    height: 8vh;
+    padding: 0;
+    font-size: 5vw;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+#start-button {
+    background-color: #28a745;
+    color: white;
+}
+
+#start-button:hover {
+    background-color: #218838;
+}
+
+#stop-button {
+    background-color: #dc3545;
+    color: white;
+    margin-left: 10px;
+}
+
+#stop-button:hover {
+    background-color: #c82333;
+}

@@ -1,62 +1,88 @@
 body {
+    /* 背景色を薄いグリーンにし、中央寄せの基盤を作る */
+    background-color: #f0fff0;
     font-family: Arial, sans-serif;
-    /* ★修正★ Flexboxで縦に並べ、要素全体を中央に集める */
-    display: flex; 
-    flex-direction: column;
-    align-items: center; /* 水平中央寄せ */
-    justify-content: center;
-
-    min-height: 100vh;
+    font-size: 18px; /* 基本フォントサイズを拡大 */
     margin: 0;
-    background-color: rgb(191, 255, 196);
-    overflow-x: hidden;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 左右中央寄せ */
+    min-height: 100vh;
     text-align: center;
 }
 
-/*タイトル*/
 h1 {
+    /* ADVENTURE STEPS */
     color: #333;
-    font-size: 8vw;
-    margin-bottom: 3vh;
-    margin-top: 0;
+    font-size: 3rem; /* タイトルを大きく */
+    margin-bottom: 25px;
 }
 
-body > p {
-    font-size: 5vw;
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 1vh;
+h2 {
+    /* YOUR QUESTS */
+    color: #333;
+    font-size: 2.2rem; /* 見出しを大きく */
+    margin-top: 40px;
+    margin-bottom: 20px;
 }
 
-/*歩数カウント*/
+/* --- ステップ数表示エリア --- */
 #step-count {
-    font-size: 15vw;
-    font-weight: bold;
+    /* 118 の数字 - 最も大きく目立たせる */
+    font-size: 8rem; /* 大幅に拡大 */
+    font-weight: 900;
     color: #007bff;
-    margin: 0;
     display: block;
+    margin: 10px 0 20px 0;
 }
 
-/*ボタン群を中央下部に配置*/
+/* --- プログレスバー --- */
+#progress {
+    width: 90%;
+    max-width: 400px;
+    height: 15px;
+    margin: 20px auto;
+}
+
+/* --- クエストリスト --- */
+#quests-list {
+    width: 90%;
+    max-width: 400px;
+    margin: 10px auto;
+    list-style: none;
+    padding: 0;
+}
+
+.quest-item {
+    /* 100歩達成 の文字 */
+    background-color: #e0f8e0;
+    color: #333;
+    padding: 20px; /* パディングを大きく */
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    font-size: 1.5rem; /* 文字を拡大 */
+}
+
+/* --- ボタンコンテナ --- */
 #button-container {
     display: flex;
-    flex-direction: row; /* 横並び */
-    justify-content: center; /* ボタンを中央寄せ */
-    gap: 3vw;
-    margin-bottom: 0vh; 
-    width: 100%;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
 }
 
-/*ボタンの共通スタイル*/
 button {
-    width: 10vh;
-    height: 8vh;
-    padding: 0;
-    font-size: 5vw;
+    padding: 15px 35px; /* ボタンサイズを大きく */
+    font-size: 1.4rem; /* ボタンの文字を拡大 */
     cursor: pointer;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px; /* 角を丸く */
     transition: background-color 0.3s;
+    font-weight: bold;
+    width: 150px; /* 幅を統一して押しやすく */
 }
 
 #start-button {
@@ -64,16 +90,16 @@ button {
     color: white;
 }
 
-#start-button:hover {
-    background-color: #218838;
-}
-
 #stop-button {
     background-color: #dc3545;
     color: white;
-    margin-left: 10px;
 }
 
-#stop-button:hover {
-    background-color: #c82333;
+/* --- メッセージエリア（「やったね！クエスト達成！」） --- */
+#message {
+    font-size: 1.8rem; /* メッセージを大きく目立たせる */
+    color: #28a745;
+    font-weight: bold;
+    height: 20px;
+    margin-top: 20px;
 }
