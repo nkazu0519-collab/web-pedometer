@@ -141,9 +141,9 @@ function checkMission() {
     const quest = document.getElementById("quest1");
     const msg = document.getElementById("message");
 
-    if (steps >= 5000) {
+    if (steps >= 100) {
         // クエスト表示を書き換え
-        quest.textContent = "5000歩 → ✅達成！";
+        quest.textContent = "100歩 → ✅達成！";
 
         // メッセージ表示
         msg.textContent = "やったね！クエスト達成！";

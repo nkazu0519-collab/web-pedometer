@@ -43,7 +43,7 @@ body > p {
     flex-direction: row; /* 横並び */
     justify-content: center; /* ボタンを中央寄せ */
     gap: 3vw;
-    margin-top: 5vh; 
+    margin-bottom: 5vh; 
     width: 100%;
 }
 
