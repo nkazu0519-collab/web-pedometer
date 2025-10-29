@@ -2,9 +2,8 @@ body {
     /* 背景色を薄いグリーンにし、中央寄せの基盤を作る */
     background-color: #f0fff0;
     font-family: Arial, sans-serif;
-    font-size: 1rem;
     margin: 0;
-    padding: 20px;
+    padding: 2vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -16,41 +15,42 @@ body {
 h1 {
     /* ADVENTURE STEPS */
     color: #333;
-    font-size: 3vw; /* タイトルを大きく */
-    margin-bottom: 25px;
+    font-size: 8vw; /* タイトルを大きく */
+    margin-bottom: 3vh;
 }
 
 h2 {
     /* YOUR QUESTS */
     color: #333;
-    font-size: 2.2vw; /* 見出しを大きく */
-    margin-top: 40px;
-    margin-bottom: 20px;
+    font-size: 6vw; /* 見出しを大きく */
+    margin-top: 5vh;
+    margin-bottom: 3vh;
 }
 
 /* --- ステップ数表示エリア --- */
 #step-count {
     /* 118 の数字 - 最も大きく目立たせる */
-    font-size: 8vw; /* 大幅に拡大 */
+    font-size: 20vw; /* 大幅に拡大 */
     font-weight: 900;
     color: #007bff;
     display: block;
-    margin: 10px 0 20px 0;
+    margin: 2vh 0 4vh 0;
 }
 
 /* --- プログレスバー --- */
 #progress {
     width: 90%;
     max-width: 400px;
-    height: 15px;
-    margin: 20px auto;
+    height: 2.5vh;
+    margin: 4vh auto;
+    display: block;
 }
 
 /* --- クエストリスト --- */
 #quests-list {
     width: 90%;
     max-width: 400px;
-    margin: 10px auto;
+    margin: 2vh auto;
     list-style: none;
     padding: 0;
 }
@@ -59,31 +59,32 @@ h2 {
     /* 100歩達成 の文字 */
     background-color: #e0f8e0;
     color: #333;
-    padding: 20px; /* パディングを大きく */
-    margin-bottom: 10px;
+    padding: 4vw; /* パディングを大きく */
+    margin-bottom: 2vh;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: left;
-    font-size: 1.5vw; /* 文字を拡大 */
+    font-size: 4vw; /* 文字を拡大 */
 }
 
 /* --- ボタンコンテナ --- */
 #button-container {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    margin-top: 30px;
+    gap: 5vw;
+    margin-top: 5vh;
 }
 
 button {
-    padding: 15px 35px; /* ボタンサイズを大きく */
-    font-size: 1.4vw; /* ボタンの文字を拡大 */
+    padding: 3vw 6vw; /* ボタンサイズを大きく */
+    font-size: 4.5vw; /* ボタンの文字を拡大 */
     cursor: pointer;
     border: none;
     border-radius: 10px; /* 角を丸く */
     transition: background-color 0.3s;
     font-weight: bold;
-    width: 150px; /* 幅を統一して押しやすく */
+    width: 40vw;
+    width: 180px; /* 幅を統一して押しやすく */
 }
 
 #start-button {
@@ -98,9 +99,9 @@ button {
 
 /* --- メッセージエリア（「やったね！クエスト達成！」） --- */
 #message {
-    font-size: 1.8vw; /* メッセージを大きく目立たせる */
+    font-size: 5vw; /* メッセージを大きく目立たせる */
     color: #28a745;
     font-weight: bold;
-    height: 20px;
-    margin-top: 20px;
+    height: 3vh;
+    margin-top: 4vh;
 }
