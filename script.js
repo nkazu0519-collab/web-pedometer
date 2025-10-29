@@ -52,7 +52,7 @@ function startCounting() {
     const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
 
     // 日付チェック
-    if (lastsaveDate !== today) {
+    if (lastSaveDate !== today) {
         steps = 0;
         localStorage.setItem(STORAGE_KEY_DATE, today);
     } else if (savedSteps !== null) {
@@ -95,15 +95,6 @@ function handleMotion(event) {
     const a = event.accelerationIncludingGravity;
     if (!a) return; // データが無い場合スキップ
 
-// 進捗バーを更新
-function updateProgress() {
-    const progress = document.getElementById("progress");
-    if (progress) {
-        progress.value = steps;
-    }
-}
-
-
     // --- 重力成分の分離 ---
     gravity.x = ALPHA * gravity.x + (1 - ALPHA) * a.x;
     gravity.y = ALPHA * gravity.y + (1 - ALPHA) * a.y;
@@ -135,6 +126,14 @@ function updateProgress() {
 
         checkMission();
         updateProgress();
+    }
+}
+
+// 進捗バーを更新
+function updateProgress() {
+    const progress = document.getElementById("progress");
+    if (progress) {
+        progress.value = steps;
     }
 }
 
