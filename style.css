@@ -1,8 +1,13 @@
+html {
+    /* デフォルトの 16px から 20px に拡大 (約25%拡大) */
+    font-size: 125%; /* 16px * 1.25 = 20px */
+}
+
 body {
     /* 背景色を薄いグリーンにし、中央寄せの基盤を作る */
     background-color: #f0fff0;
     font-family: Arial, sans-serif;
-    font-size: 18px; /* 基本フォントサイズを拡大 */
+    font-size: 1rem;
     margin: 0;
     padding: 20px;
     min-height: 100vh;
