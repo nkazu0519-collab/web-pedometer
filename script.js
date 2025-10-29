@@ -20,7 +20,7 @@ const STORAGE_KEY_DATE = 'pedometerDate';
 
 // Local Storage1の日付処理
 function getToday() {
-    return new Date().toISOStirng().slice(0, 10);
+    return new Date().toISOString().slice(0, 10);
 }
 
 // 進行状況をLocal Storageに保存する関数
@@ -28,7 +28,7 @@ function saveProgress() {
     const today = new Date().toDateString(); // 今日の日付を文字列で取得
     localStorage.setItem(STORAGE_KEY_STEPS, steps.toString());
     localStorage.setItem(STORAGE_KEY_DATE, today);
-    console.log('進行状況を保存しました。歩数: ${steps}');
+    console.log(`進行状況を保存しました。歩数: ${steps}`);
 }
 
 // 歩数カウントを開始する関数
@@ -52,7 +52,7 @@ function startCounting() {
     const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
 
     // 日付チェック
-    if (lastDate !== today) {
+    if (lastsaveDate !== today) {
         steps = 0;
         localStorage.setItem(STORAGE_KEY_DATE, today);
     } else if (savedSteps !== null) {

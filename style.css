@@ -49,10 +49,10 @@ body > p {
 
 /*ボタンの共通スタイル*/
 button {
-    width: 25vh;
-    height: 12vh;
+    width: 10vh;
+    height: 8vh;
     padding: 0;
-    font-size: 3vw;
+    font-size: 5vw;
     cursor: pointer;
     border: none;
     border-radius: 5px;
