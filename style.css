@@ -5,24 +5,27 @@ body {
     margin: 0;
     background-color: rgb(191, 255, 196);
     position: relative;
+    overflow-x: hidden; /* 横スクロール防止 */
 }
 
+/*タイトル*/
 #margin-title {
     color: #333;
-    font-size: 2.5rem;
+    font-size: 8vw;
     position: absolute;
-    top: 20px;
+    top: 5vh;
     left: 50%;
     transform: translateX(-50%);
     margin: 0;
 }
 
+/*歩数全体表示*/
 #step-display {
     position: absolute;
-    top: 150px;
-    left: 50px;
+    top: 25vh;
+    left: 5vw;
     color: #000;
-    font-size: 1.5rem;
+    font-size: 5vw;
     font-weight: bold;
 }
 
@@ -31,11 +34,12 @@ body {
     text-align: left;
 }
 
+/*歩数カウント*/
 #step-count {
-    font-size: 4rem;
+    font-size: 15vw;
     font-weight: bold;
     color: #007bff;
-    margin: 5px 0 0 0; /* 上部に少しマージンを追加してテキストと離す */
+    margin: 1vh 0 0 0; /* 上部に少しマージンを追加してテキストと離す */
     
     /* ★修正★：ブロック要素に変更し、強制的に改行させる */
     display: block;
@@ -44,18 +48,19 @@ body {
 /* 4. ボタン群を中央下部に配置 (省略) */
 #button-container {
     position: absolute;
-    bottom: 50px;
+    bottom: 5vh;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 10px;
+    gap: 3vw;
 }
 
+/*ボタンの共通スタイル*/
 button {
-    width: 80px;  /* 幅を正方形に設定 */
-    height: 80px; /* 高さを正方形に設定 */
+    width: 20vh;  /* 幅を正方形に設定 */
+    height: 20vh; /* 高さを正方形に設定 */
     padding: 0;   /* 内側の余白をリセット */
-    font-size: 1rem;
+    font-size: 3vw;
     cursor: pointer;
     border: none;
     border-radius: 5px;

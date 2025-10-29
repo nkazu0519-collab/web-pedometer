@@ -15,6 +15,18 @@ const THRESHOLD = 10.0; // 歩数判定の閾値（大きいほど厳しい）
 const STEP_INTERVAL = 400; // 歩行感覚の最小時間(ms)
 const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
 
+// Local Storageのキー
+const STORAGE_KEY_STEPS = 'pedometerSteps';
+const STORAGE_KEY_DATE = 'pedometerDate';
+
+// 進行状況をLocal Storageに保存する関数
+function saveProgress() {
+    const today = new Date().toDateString(); // 今日の日付を文字列で取得
+    localStorage.setItem(STORAGE_KEY_STEPS, steps.toString());
+    localStorage.setItem(STORAGE_KEY_DATE, today);
+    console.log('進行状況を保存しました。歩数: ${steps}');
+}
+
 // 歩数カウントを開始する関数
 function startCounting() {
     if (isCounting) return;
@@ -97,3 +109,5 @@ function handleMotion(event) {
 // ボタンにイベントリスナーを追加
 startButton.addEventListener('click', startCounting);
 stopButton.addEventListener('click', stopCounting);
+
+// ページを離れる直前（リロード
