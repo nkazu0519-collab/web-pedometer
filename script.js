@@ -8,7 +8,6 @@ let steps = 0;
 let isCounting = false;
 let lastStepTime = 0; // 前回の歩数記録時刻
 let gravity = { x: 0, y: 0, z: 0};
-let lastAcceleration = { x: 0, y: 0, z: 0 };
 
 // 定数（チューニング用）
 const THRESHOLD = 10.0; // 歩数判定の閾値（大きいほど厳しい）
@@ -18,6 +17,11 @@ const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
 // Local Storageのキー
 const STORAGE_KEY_STEPS = 'pedometerSteps';
 const STORAGE_KEY_DATE = 'pedometerDate';
+
+// Local Storage1の日付処理
+function getToday() {
+    return new Date().toISOStirng().slice(0, 10);
+}
 
 // 進行状況をLocal Storageに保存する関数
 function saveProgress() {
@@ -31,7 +35,6 @@ function saveProgress() {
 function startCounting() {
     if (isCounting) return;
 
-    // ★オプション★
     // 計測をリセットしたい場合だけ以下を有効にする
     // steps = 0;
 
@@ -44,23 +47,20 @@ function startCounting() {
     isCounting = true;
 
     // データ読み込みと日付リセットのロジック
-    const today = new Date().toDateString();
+    const today = getToday();
     const lastSaveDate = localStorage.getItem(STORAGE_KEY_DATE);
     const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
 
-    if (lastSaveDate !== today) {
-        // 日付が変わっていたらリセット（昨日までの歩数は破棄）
+    // 日付チェック
+    if (lastDate !== today) {
         steps = 0;
-        localStorage.setItem(STORAGE_KEY_DATE, today); // 新しい日付を保存
+        localStorage.setItem(STORAGE_KEY_DATE, today);
     } else if (savedSteps !== null) {
-        // 同じ日なら保存されていた歩数を読み込み
-        steps = parseInt(savedSteps, 10);
-    } else {
-        // 初回ロード時（データなし）
-        steps = 0;
+        steps = parseInt(savedSteps, 10) || 0;
     }
 
-    lastAcceleration = { x: 0, y: 0, z: 0};
+    gravity = { x: 0, y: 0, z: 0 };
+    lastStepTime = 0;
     stepCountElement.textContent = steps;
 
     // iOSの許可を求めるためのコード
