@@ -23,15 +23,18 @@ body {
 #step-display {
     position: absolute;
     top: 25vh;
-    left: 5vw;
+    left: 50%;
+    transform: translateX(-50%);
     color: #000;
     font-size: 5vw;
     font-weight: bold;
+    text-align: center;
+    width: 90vh;
 }
 
 #step-display p {
     margin: 0;
-    text-align: left;
+    text-align: center;
 }
 
 /*歩数カウント*/
@@ -45,20 +48,21 @@ body {
     display: block;
 }
 
-/* 4. ボタン群を中央下部に配置 (省略) */
+/*ボタン群を中央下部に配置*/
 #button-container {
     position: absolute;
-    bottom: 5vh;
+    bottom: 55vh;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
+    flex-direction: row;
     gap: 3vw;
 }
 
 /*ボタンの共通スタイル*/
 button {
-    width: 20vh;  /* 幅を正方形に設定 */
-    height: 20vh; /* 高さを正方形に設定 */
+    width: 25vh;  /* 幅を正方形に設定 */
+    height: 12vh; /* 高さを正方形に設定 */
     padding: 0;   /* 内側の余白をリセット */
     font-size: 3vw;
     cursor: pointer;

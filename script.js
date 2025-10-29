@@ -42,6 +42,24 @@ function startCounting() {
     }
 
     isCounting = true;
+
+    // データ読み込みと日付リセットのロジック
+    const today = new Date().toDateString();
+    const lastSaveDate = localStorage.getItem(STORAGE_KEY_DATE);
+    const satedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
+
+    if (lastSaveDate !== today) {
+        // 日付が変わっていたらリセット（昨日までの歩数は破棄）
+        steps = 0;
+        localStorage.setItem(STORAGE_KEY_DATE, today); // 新しい日付を保存
+    } else if (saveSteps !== null) {
+        // 同じ日なら保存されていた歩数を読み込み
+        steps = parseInt(savedSteps, 10);
+    } else {
+        // 初回ロード時（データなし）
+        steps = 0;
+    }
+
     lastAcceleration = { x: 0, y: 0, z: 0};
     stepCountElement.textContent = steps;
 
@@ -110,4 +128,5 @@ function handleMotion(event) {
 startButton.addEventListener('click', startCounting);
 stopButton.addEventListener('click', stopCounting);
 
-// ページを離れる直前（リロード
+// ページを離れる直前（リロードやタブを閉じるとき）に歩数を保存する
+window.addEventListener('beforeunload', saveProgress);
