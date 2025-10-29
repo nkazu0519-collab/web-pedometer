@@ -140,10 +140,11 @@ function updateProgress() {
 function checkMission() {
     const quest = document.getElementById("quest1");
     const msg = document.getElementById("message");
+    const GOAL_STEPS = 100;
 
-    if (steps >= 100) {
+    if (steps >= GOAL_STEPS) {
         // クエスト表示を書き換え
-        quest.textContent = "100歩 → ✅達成！";
+        quest.textContent = "100歩達成！";
 
         // メッセージ表示
         msg.textContent = "やったね！クエスト達成！";
