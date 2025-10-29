@@ -57,12 +57,6 @@ button {
     border: none;
     border-radius: 5px;
     transition: background-color 0.3s;
-    
-    /* テキストをボタンの中央に配置するためのFlexbox */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center; /* 万が一の改行時も中央揃え */
 }
 
 #start-button {
