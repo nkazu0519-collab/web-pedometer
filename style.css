@@ -5,10 +5,11 @@ body {
     font-size: 18px; /* 基本フォントサイズを拡大 */
     margin: 0;
     padding: 20px;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center; /* 左右中央寄せ */
-    min-height: 100vh;
+    justify-content: center;
     text-align: center;
 }
 
