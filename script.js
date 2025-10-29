@@ -46,7 +46,7 @@ function startCounting() {
     // データ読み込みと日付リセットのロジック
     const today = new Date().toDateString();
     const lastSaveDate = localStorage.getItem(STORAGE_KEY_DATE);
-    const satedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
+    const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
 
     if (lastSaveDate !== today) {
         // 日付が変わっていたらリセット（昨日までの歩数は破棄）
@@ -85,6 +85,8 @@ function stopCounting() {
     if (!isCounting) return;
     isCounting = false;
     window.removeEventListener('devicemotion', handleMotion);
+    // 停止時に保存関数を呼び出す
+    saveProgress();
     console.log('計測を停止しました');
 }
 
