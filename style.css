@@ -1,40 +1,32 @@
 body {
     font-family: Arial, sans-serif;
-    display: block;
+    /* ★修正★ Flexboxで縦に並べ、要素全体を中央に集める */
+    display: flex; 
+    flex-direction: column;
+    align-items: center; /* 水平中央寄せ */
+    
     min-height: 100vh;
     margin: 0;
     background-color: rgb(191, 255, 196);
-    position: relative;
-    overflow-x: hidden; /* 横スクロール防止 */
+    overflow-x: hidden;
+    padding-top: 5vh; /* 上部に余白を追加 */
+    padding-bottom: 5vh; /* 下部に余白を追加 */
+    text-align: center;
 }
 
 /*タイトル*/
-#margin-title {
+h1 {
     color: #333;
     font-size: 8vw;
-    position: absolute;
-    top: 5vh;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0;
+    margin-bottom: 3vh;
+    margin-top: 0;
 }
 
-/*歩数全体表示*/
-#step-display {
-    position: absolute;
-    top: 25vh;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #000;
+body > p {
     font-size: 5vw;
     font-weight: bold;
-    text-align: center;
-    width: 90vh;
-}
-
-#step-display p {
-    margin: 0;
-    text-align: center;
+    color: #000;
+    margin-bottom: 1vh;
 }
 
 /*歩数カウント*/
@@ -42,28 +34,26 @@ body {
     font-size: 15vw;
     font-weight: bold;
     color: #007bff;
-    margin: 1vh 0 0 0; /* 上部に少しマージンを追加してテキストと離す */
-    
-    /* ★修正★：ブロック要素に変更し、強制的に改行させる */
+    margin: 0;
     display: block;
 }
 
 /*ボタン群を中央下部に配置*/
 #button-container {
-    position: absolute;
-    bottom: 55vh;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
-    flex-direction: row;
+    flex-direction: row; /* 横並び */
+    justify-content: center; /* ボタンを中央寄せ */
     gap: 3vw;
+    margin-top: 5vh; 
+    margin-bottom: 5vh; 
+    width: 100%;
 }
 
 /*ボタンの共通スタイル*/
 button {
-    width: 25vh;  /* 幅を正方形に設定 */
-    height: 12vh; /* 高さを正方形に設定 */
-    padding: 0;   /* 内側の余白をリセット */
+    width: 25vh;
+    height: 12vh;
+    padding: 0;
     font-size: 3vw;
     cursor: pointer;
     border: none;
@@ -94,4 +84,20 @@ button {
 
 #stop-button:hover {
     background-color: #c82333;
+}
+
+/*クエスト表示*/
+h2{
+    font-size: 5vh;
+    margin-top: 3vh;
+    margin-bottom: 1vh;
+}
+
+ul {
+    list-style-position: inside;
+    width: 50%;
+    margin: 0 auto;
+    padding: 0;
+    font-size: 4vw;
+    text-align: left;
 }

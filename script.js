@@ -52,7 +52,7 @@ function startCounting() {
         // 日付が変わっていたらリセット（昨日までの歩数は破棄）
         steps = 0;
         localStorage.setItem(STORAGE_KEY_DATE, today); // 新しい日付を保存
-    } else if (saveSteps !== null) {
+    } else if (savedSteps !== null) {
         // 同じ日なら保存されていた歩数を読み込み
         steps = parseInt(savedSteps, 10);
     } else {
