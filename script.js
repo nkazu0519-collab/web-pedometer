@@ -13,6 +13,7 @@ let gravity = { x: 0, y: 0, z: 0};
 const THRESHOLD = 10.0; // 歩数判定の閾値（大きいほど厳しい）
 const STEP_INTERVAL = 400; // 歩行感覚の最小時間(ms)
 const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
+const QUEST_GOAL = 100; // クエスト目標値 (100歩)
 
 // Local Storageのキー
 const STORAGE_KEY_STEPS = 'pedometerSteps';
@@ -24,7 +25,7 @@ function getToday() {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return '${year}-${month}-${day}';
+    return `${year}-${month}-${day}`;
 }
 
 // 進行状況をLocal Storageに保存する関数
@@ -138,15 +139,16 @@ function updateProgress() {
     const progress = document.getElementById("progress");
     if (progress) {
         progress.value = steps;
+        // HTMLでmaxが設定されていない場合のために追加
+        progress.max = QUEST_GOAL;
     }
 }
 
 function checkMission() {
     const quest = document.getElementById("quest1");
     const msg = document.getElementById("message");
-    const GOAL_STEPS = 100;
 
-    if (steps >= GOAL_STEPS) {
+    if (steps >= QUEST_GOAL) {
         // クエスト表示を書き換え
         quest.textContent = "100歩達成！";
 
