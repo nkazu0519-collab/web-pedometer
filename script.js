@@ -20,15 +20,19 @@ const STORAGE_KEY_DATE = 'pedometerDate';
 
 // Local Storage1の日付処理
 function getToday() {
-    return new Date().toISOString().slice(0, 10);
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return '${year}-${month}-${day}';
 }
 
 // 進行状況をLocal Storageに保存する関数
 function saveProgress() {
-    const today = new Date().toDateString(); // 今日の日付を文字列で取得
+    const today = getToday(); // 今日の日付を文字列で取得
     localStorage.setItem(STORAGE_KEY_STEPS, steps.toString());
     localStorage.setItem(STORAGE_KEY_DATE, today);
-    console.log(`進行状況を保存しました。歩数: ${steps}`);
+    console.log(`進行状況を保存しました。歩数: ${steps}, 日付: ${today}`);
 }
 
 // 歩数カウントを開始する関数
