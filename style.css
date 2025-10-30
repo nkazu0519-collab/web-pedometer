@@ -84,7 +84,7 @@ button {
     transition: background-color 0.3s;
     font-weight: bold;
     width: 40vw;
-    width: 180px; /* 幅を統一して押しやすく */
+    max-width: 180px; /* 幅を統一して押しやすく */
 }
 
 #start-button {
