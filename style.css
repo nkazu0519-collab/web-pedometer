@@ -105,3 +105,11 @@ button {
     height: 3vh;
     margin-top: 4vh;
 }
+
+#label-steps {
+    /* 現在の文字サイズから大きく調整 */
+    font-size: 4vw; 
+    /* 必要に応じて、下に続く数字（歩数）との間隔も調整 */
+    margin-bottom: 5px; 
+    color: #444;
+}
