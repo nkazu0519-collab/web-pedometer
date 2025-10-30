@@ -10,7 +10,7 @@ let lastStepTime = 0; // 前回の歩数記録時刻
 let gravity = { x: 0, y: 0, z: 0};
 
 // 定数（チューニング用）
-const THRESHOLD = 10.0; // 歩数判定の閾値（大きいほど厳しい）
+const THRESHOLD = 10.0; // 歩数判定の閾値（最適値）
 const STEP_INTERVAL = 400; // 歩行感覚の最小時間(ms)
 const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
 const QUEST_GOAL = 100; // クエスト目標値 (100歩)
@@ -20,18 +20,19 @@ const GOAL_BAR_WIDTH = 100; // 進捗バーの最大幅 (100%)
 const STORAGE_KEY_STEPS = 'pedometerSteps';
 const STORAGE_KEY_DATE = 'pedometerDate';
 
-// Local Storage1の日付処理
+// Local Storage1の日付処理 (YYYY-MM-DD形式)
 function getToday() {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    // 修正済み: テンプレートリテラルを使用
+    return `${year}-${month}-${day}`; 
 }
 
 // 進行状況をLocal Storageに保存する関数
 function saveProgress() {
-    const today = getToday(); // 今日の日付を文字列で取得
+    const today = getToday();
     localStorage.setItem(STORAGE_KEY_STEPS, steps.toString());
     localStorage.setItem(STORAGE_KEY_DATE, today);
     console.log(`進行状況を保存しました。歩数: ${steps}, 日付: ${today}`);
@@ -40,9 +41,6 @@ function saveProgress() {
 // 歩数カウントを開始する関数
 function startCounting() {
     if (isCounting) return;
-
-    // 計測をリセットしたい場合だけ以下を有効にする
-    // steps = 0;
 
     // センサー非対応端末チェック
     if (!('DeviceMotionEvent' in window)) {
@@ -68,6 +66,10 @@ function startCounting() {
     gravity = { x: 0, y: 0, z: 0 };
     lastStepTime = 0;
     stepCountElement.textContent = steps;
+    
+    // 計測開始時に進捗バーを更新して初期状態を反映
+    updateProgress(); 
+    checkMission();
 
     // iOSの許可を求めるためのコード
     if (typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -80,7 +82,6 @@ function startCounting() {
             }
         }).catch(console.error);
     } else {
-        // Androidなど、許可が不要な環境向け
         window.addEventListener('devicemotion', handleMotion);
     }
     console.log('計測を開始しました');
@@ -91,7 +92,6 @@ function stopCounting() {
     if (!isCounting) return;
     isCounting = false;
     window.removeEventListener('devicemotion', handleMotion);
-    // 停止時に保存関数を呼び出す
     saveProgress();
     console.log('計測を停止しました');
 }
@@ -99,7 +99,7 @@ function stopCounting() {
 // 動きのデータを処理する関数
 function handleMotion(event) {
     const a = event.accelerationIncludingGravity;
-    if (!a) return; // データが無い場合スキップ
+    if (!a) return; 
 
     // --- 重力成分の分離 ---
     gravity.x = ALPHA * gravity.x + (1 - ALPHA) * a.x;
@@ -120,9 +120,6 @@ function handleMotion(event) {
         linearAcceleration.z ** 2
     );
 
-    // --- デバッグ用：コンソールに出すと調整しやすい ---
-    // console.log('magnitude:', magnitude);
-
     // --- 歩数判定 ---
     const now = Date.now();
     if (magnitude > THRESHOLD && now - lastStepTime > STEP_INTERVAL) {
@@ -135,41 +132,45 @@ function handleMotion(event) {
     }
 }
 
-// 進捗バーを更新
+// 進捗バーとカスタムバーを更新
 function updateProgress() {
+    // 1. 標準プログレスバーの更新
     const progress = document.getElementById("progress");
     if (progress) {
         progress.value = steps;
-        // HTMLでmaxが設定されていない場合のために追加
         progress.max = QUEST_GOAL;
+    }
+    
+    // 2. カスタム進捗バーの更新 (クエスト内の細いバー)
+    const progressBarFill = document.getElementById("quest-progress-fill-1");
+    if (progressBarFill) {
+        let progressPercent = Math.min(steps / QUEST_GOAL, 1) * GOAL_BAR_WIDTH;
+        progressBarFill.style.width = progressPercent + '%';
     }
 }
 
 function checkMission() {
     const questItem = document.getElementById("quest1");
     const msg = document.getElementById("message");
-    const progressBarFill = document.getElementById("quest-progress-fill-1");
-    
-    // --- 進捗の計算 ---
-    let progressPercent = Math.min(steps / QUEST_GOAL, 1) * GOAL_BAR_WIDTH;
-    progressBarFill.style.width = progressPercent + '%';
+    // 達成チェックマーク要素の取得
+    const questCheck = document.getElementById("quest-check-1"); 
 
-    // --- 達成判定 ---
     if (steps >= QUEST_GOAL) {
         if (!questItem.classList.contains('completed')) {
-            // 達成時処理
+            // 達成時処理 (初回達成時のみ実行)
             questItem.classList.add('completed');
+            // チェックマークの不透明度を100%にして表示
+            if (questCheck) {
+                 questCheck.style.opacity = 1; 
+            }
             msg.textContent = "やったね！クエスト達成！";
         }
     } else {
-        // 未達成時はメッセージをクリア
         msg.textContent = ""; 
     }
 }
 
-// ボタンにイベントリスナーを追加
+// ボタンとウィンドウイベントにリスナーを追加
 startButton.addEventListener('click', startCounting);
 stopButton.addEventListener('click', stopCounting);
-
-// ページを離れる直前（リロードやタブを閉じるとき）に歩数を保存する
 window.addEventListener('beforeunload', saveProgress);
