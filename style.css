@@ -49,22 +49,82 @@ h2 {
 /* --- クエストリスト --- */
 #quests-list {
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
     margin: 2vh auto;
-    list-style: none;
     padding: 0;
 }
 
+/* --- 個別のクエストアイテム (緑色のボックス) --- */
 .quest-item {
     /* 100歩達成 の文字 */
-    background-color: #e0f8e0;
-    color: #333;
-    padding: 4vw; /* パディングを大きく */
-    margin-bottom: 2vh;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    font-size: 4vw; /* 文字を拡大 */
+    background-color: #64A33B;
+    color: white;
+    padding: 15px; /* パディングを大きく */
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    
+    /* 要素を横並びにするためのFlexbox設定 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 両端揃え */
+    
+    position: relative;
+    overflow: hidden; /* 進捗バーのため */
+}
+
+/* --- アイコンとテキスト部分のコンテナ --- */
+.quest-content {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* アイコンと文字の間隔 */
+}
+
+.quest-icon {
+    font-size: 2.5rem; /* 大きめのアイコン */
+}
+
+/* --- テキストと進捗バーの配置 --- */
+.quest-text-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+#quest-description {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* --- 達成チェックマーク --- */
+.quest-check {
+    font-size: 2rem;
+    color: #fff;
+    opacity: 0; /* ★初期状態では非表示★ */
+    transition: opacity 0.3s;
+}
+
+/* --- 達成時のスタイル --- */
+.quest-item.completed .quest-check {
+    opacity: 1; /* 達成時にチェックマークを表示 */
+}
+
+/* --- カスタム進捗バー (画像下部の薄いライン) --- */
+.custom-progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.3); /* 薄い白の背景 */
+    border-radius: 3px;
+    margin-top: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%; /* ★JavaScriptでこの幅を変更します★ */
+    background-color: #f0fff0; /* 達成度を示す白のバー */
+    border-radius: 3px;
+    transition: width 0.3s ease-in-out;
 }
 
 /* --- ボタンコンテナ --- */

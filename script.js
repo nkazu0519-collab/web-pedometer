@@ -14,6 +14,7 @@ const THRESHOLD = 10.0; // 歩数判定の閾値（大きいほど厳しい）
 const STEP_INTERVAL = 400; // 歩行感覚の最小時間(ms)
 const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
 const QUEST_GOAL = 100; // クエスト目標値 (100歩)
+const GOAL_BAR_WIDTH = 100; // 進捗バーの最大幅 (100%)
 
 // Local Storageのキー
 const STORAGE_KEY_STEPS = 'pedometerSteps';
@@ -145,18 +146,24 @@ function updateProgress() {
 }
 
 function checkMission() {
-    const quest = document.getElementById("quest1");
+    const questItem = document.getElementById("quest1");
     const msg = document.getElementById("message");
+    const progressBarFill = document.getElementById("quest-progress-fill-1");
+    
+    // --- 進捗の計算 ---
+    let progressPercent = Math.min(steps / QUEST_GOAL, 1) * GOAL_BAR_WIDTH;
+    progressBarFill.style.width = progressPercent + '%';
 
+    // --- 達成判定 ---
     if (steps >= QUEST_GOAL) {
-        // クエスト表示を書き換え
-        quest.textContent = "100歩達成！";
-
-        // メッセージ表示
-        msg.textContent = "やったね！クエスト達成！";
-
-        // 2回以上反応しないように return
-        return;
+        if (!questItem.classList.contains('completed')) {
+            // 達成時処理
+            questItem.classList.add('completed');
+            msg.textContent = "やったね！クエスト達成！";
+        }
+    } else {
+        // 未達成時はメッセージをクリア
+        msg.textContent = ""; 
     }
 }
 
