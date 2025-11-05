@@ -118,6 +118,7 @@ h2 {
 .quest-content {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     flex-grow: 1;
     flex-shrink: 0;
@@ -130,7 +131,7 @@ h2 {
 .quest-text-bar {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 4px;
     flex-grow: 1;
     min-width: 0;
