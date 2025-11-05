@@ -103,7 +103,10 @@ h2 {
     position: relative;
     overflow: hidden;
     gap: 10px;
+
     width: 100%;
+    max-width: 450px;
+    margin: 0 auto; /* 自動で中央寄せ */
 }
 
 /* 達成 */
