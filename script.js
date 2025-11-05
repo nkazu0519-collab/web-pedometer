@@ -36,10 +36,6 @@ const STORAGE_KEY_WEEKLY_STEPS = 'weeklySteps';
 // ★ミッションデータ配列 (難易度順)★
 const MISSIONS = [
     { id: 1, goal: 100, text: '初級: 100歩達成', icon: '👟' },
-    { id: 2, goal: 500, text: 'ウォーミングアップ: 500歩達成', icon: '🏃' },
-    { id: 3, goal: 1000, text: '基礎訓練: 1,000歩達成', icon: '⛰️' },
-    { id: 4, goal: 5000, text: 'デイリー目標: 5,000歩達成', icon: '🏅' },
-    { id: 5, goal: 7777, text: 'シークレットボーナス: 7,777歩！', icon: '🎁' },
     // 必要に応じてミッションを追加してください
 ];
 
