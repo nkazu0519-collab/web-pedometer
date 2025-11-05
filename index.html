@@ -4,39 +4,43 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TODAY'S STEPS</title>
-    
+
+    <!-- スタイル -->
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- 花火アニメーションコンテナ -->
+    <!-- 花火エフェクト表示用コンテナ -->
     <div id="fireworks-container"></div>
 
-    <h1 class="title">TODAY'S STEPS</h1>
+    <main>
+        <!-- タイトル -->
+        <h1 class="title">TODAY'S STEPS</h1>
 
-    <!-- 歩数表示 -->
-    <div class="step-display">
-        <span id="step-count">0</span>
-    </div>
+        <!-- 歩数表示 -->
+        <div class="step-display">
+            <span id="step-count" aria-live="polite">0</span>
+        </div>
 
-    <!-- 操作ボタン -->
-    <div class="button-area">
-        <button id="start-button">▶ 計測開始</button>
-        <button id="stop-button">■ 停止</button>
-        <!-- <button id="reset-button">↺ リセット</button> -->
-    </div>
+        <!-- 操作ボタン -->
+        <div class="button-area">
+            <button id="start-button" type="button">▶ 計測開始</button>
+            <button id="stop-button" type="button">■ 停止</button>
+            <!-- <button id="reset-button" type="button">↺ リセット</button> -->
+        </div>
 
-    <!-- 現在のミッション -->
-     <h2 class="section-title">デイリークエスト</h2>
-    <ul id="current-quest-container"></ul>
+        <!-- デイリークエスト -->
+        <h2 class="section-title">デイリークエスト</h2>
+        <ul id="current-quests"></ul>
 
-    <!-- チャレンジクエスト -->
-    <h2 class="section-title">チャレンジクエスト</h2>
-    <ul id="bonus-quests-list"></ul>
+        <!-- チャレンジクエスト -->
+        <h2 class="section-title">チャレンジクエスト</h2>
+        <ul id="bonus-quests-list"></ul>
 
-    <!-- メッセージ表示（達成時） -->
-    <div id="message"></div>
+        <!-- ミッション達成メッセージ -->
+        <div id="message" aria-live="polite"></div>
+    </main>
 
-
+    <!-- スクリプト -->
     <script src="script.js"></script>
 </body>
 </html>
