@@ -174,23 +174,38 @@ button {
     color: #444;
 }
 
-/* ul要素のデフォルトスタイルをリセット */
-#current-quest-container, 
-#bonus-quests-list {
-    padding: 0;           /* 左側の余白（箇条書きのスペース）を削除 */
-    margin: 10px auto;    /* 上下に少しだけマージンを取り、中央寄せ */
-    list-style: none;     /* 箇条書きの黒い点（・）を削除 */
-    width: 90%;           /* 幅を制限 */
-    max-width: 400px;     /* 最大幅を設定 */
+
+/* --- 花火の演出エリア (追加) --- */
+#fireworks-container {
+    position: fixed; /* 画面に固定し、他のUIの上に重ねる */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999; /* 最前面に表示 */
+    pointer-events: none; /* 下のボタンが操作できるようにする */
 }
 
-/* メッセージとボタンコンテナ周辺の調整 */
-#message {
-    margin: 15px auto;    /* メッセージの上下スペースを調整 */
-    text-align: center;
+/* 花火の破片（パーティクル）の基本形 */
+.firework {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
 }
 
-/* 各ミッションアイテム間の間隔を調整 */
-.quest-item {
-    margin-bottom: 15px;  /* リストアイテムの下側に適度な間隔を空ける */
+/* 花火が広がるアニメーション（追加） */
+@keyframes explode {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    10% {
+        transform: scale(1); /* 爆発で大きく */
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.5); /* さらに広がりながら消える */
+        opacity: 0;
+    }
 }

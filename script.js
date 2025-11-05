@@ -318,6 +318,8 @@ function checkMission() {
         if (currentQuestElement) currentQuestElement.classList.add('completed');
         if (questCheckElement) questCheckElement.style.opacity = 1;
 
+
+        
         // 達成後、指定時間待って次のミッションに移行
         setTimeout(moveToNextMission, TRANSITION_DELAY); 
     }
@@ -356,3 +358,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // ページロード時にボーナスミッションを表示★
     renderBonusMissions();
 });
+
+// 花火の色定義
+const FIREWORK_COLORS = [
+    '#FF4500', // OrangeRed
+    '#FFD700', // Gold
+    '#ADFF2F', // GreenYellow
+    '#1E90FF', // DodgerBlue
+    '#FF69B4'  // HotPink
+];
+
+// ★変更点 2：花火を画面中央付近に打ち上げる関数を追加★
+function launchFireworks() {
+    const container = document.getElementById('fireworks-container');
+    if (!container) return;
+    
+    const count = 15; // 一度の演出で打ち上げる花火の数
+    
+    for (let i = 0; i < count; i++) {
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+        
+        // ランダムな色、位置、サイズを設定
+        const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
+        const size = Math.random() * 6 + 4; // 4px から 10px
+        const x = Math.random() * window.innerWidth;
+        
+        // Y座標を画面中央付近 (40%〜60%) に設定
+        const y = window.innerHeight * (0.4 + Math.random() * 0.2); 
+        
+        firework.style.backgroundColor = color;
+        firework.style.width = `${size}px`;
+        firework.style.height = `${size}px`;
+        firework.style.left = `${x}px`;
+        firework.style.top = `${y}px`;
+        
+        // 爆発アニメーションの設定
+        const duration = Math.random() * 1.5 + 0.7; // 0.7s から 2.2s
+        firework.style.animation = `explode ${duration}s ease-out forwards`;
+        firework.style.animationDelay = `${Math.random() * 0.3}s`;
+
+        container.appendChild(firework);
+        
+        // 演出が終わったら要素を削除
+        setTimeout(() => {
+            firework.remove();
+        }, (duration + 0.3) * 1000); 
+    }
+}
