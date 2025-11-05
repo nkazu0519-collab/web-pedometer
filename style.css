@@ -81,6 +81,11 @@ h2 {
     overflow: hidden;
     /* ボックス内の隙間を埋める */
     gap: 15px;
+    padding: 15px; /* ボックスの内側のスペース */
+    
+    /* 項目自体もFlexコンテナ */
+    display: flex;
+    align-items: center;
 }
 
 /* --- アイコン＆テキスト --- */
@@ -90,6 +95,8 @@ h2 {
     gap: 15px;
     /* アイコンが縮まないようにする */
     flex-shrink: 0;
+    /* 意図しない折り返しを防ぐために、アイコン以外でスペースを占有させる */
+    flex-grow: 1;
 }
 
 .quest-icon {
