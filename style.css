@@ -11,6 +11,15 @@ body {
     justify-content: flex-start;
     text-align: center;
 }
+/* リセット機能関連*/
+main {
+    width: 100%;
+    /* min-heightはbodyで持っているため不要 */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 左右中央寄せ */
+    /* mainの子要素間の間隔を調整したい場合はここにgapやmarginを設定 */
+}
 
 h1 {
     /* ADVENTURE STEPS */
@@ -92,7 +101,7 @@ h2 {
     gap: 5px;
 }
 
-.quest-description {
+#quest-description {
     font-size: 1.2rem;
     font-weight: bold;
 }

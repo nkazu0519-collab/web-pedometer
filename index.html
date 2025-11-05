@@ -1,45 +1,46 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADVENTURE STEPS</title>
 
+    <!-- スマホのステータスバー色 -->
+    <meta name="theme-color" content="#98FF98">
+
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <!-- クエスト達成時の花火アニメーション -->
+    <!-- 花火演出 -->
     <div id="fireworks-container"></div>
 
-    <h1>ADVENTURE STEPS</h1>
+    <main>
+        <h1>ADVENTURE STEPS</h1>
 
-    <p id="label-steps">
-        今日の歩数: <span id="step-count">0</span>
-    </p>
+        <!-- 今日の歩数 -->
+        <p id="label-steps">今日の歩数:</p>
+        <p id="step-count-container">
+            <span id="step-count" aria-live="polite" aria-atomic="true">0</span>
+        </p>
 
-    <div id="button-container">
-        <button id="start-button">START</button>
-        <button id="stop-button">STOP</button>
-        <!--歩数リセット機能の追加-->>
-        <button id="reset-button">RESET</button>
-    </div>
+        <!-- START / STOP ボタン -->
+        <div id="button-container">
+            <button id="start-button" type="button">START</button>
+            <button id="stop-button" type="button">STOP</button>
+            <button id="reset-button" type="button">RESET</button>
+        </div>
 
-    <h2>今日のクエスト</h2>
-    <div id="current-quest-container">
-        <!-- JSで挿入 -->
-    </div>
+        <!-- 現在のクエスト -->
+        <h2>クエスト</h2>
+        <div id="current-quest-container">読み込み中...</div>
 
-    <p id="message"></p>
+        <!-- 達成メッセージ -->
+        <p id="message" aria-live="polite"></p>
 
-    <h2>ボーナスクエスト</h2>
-    <ul id="bonus-quests-list">
-        <!-- JSで追加 -->
-    </ul>
+        <!-- ボーナスクエスト -->
+        <ul id="bonus-quests-list"></ul>
+    </main>
 
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
-
 </html>
