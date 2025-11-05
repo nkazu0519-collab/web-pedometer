@@ -105,7 +105,6 @@ h2 {
     /* ✅ 横幅を固定最大にして中央へ */
     max-width: 450px;
     width: 90%;
-    margin: 0 auto;
 }
 
 
