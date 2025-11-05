@@ -4,6 +4,8 @@ const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
 // ミッションを表示するコンテナを取得
 const currentQuestContainer = document.getElementById('current-quest-container'); 
+// ボーナスクエストのコンテナ
+const bonusQuestList = document.getElementById('bonus-quests-list');
 
 // 変数の初期設定
 let steps = 0;
@@ -23,7 +25,10 @@ const TRANSITION_DELAY = 1500; // 達成メッセージ表示から次のミッ�
 // Local Storageのキー
 const STORAGE_KEY_STEPS = 'pedometerSteps';
 const STORAGE_KEY_DATE = 'pedometerDate';
-const STORAGE_KEY_MISSION_INDEX = 'missionIndex'; // ★追加★ ミッションインデックス保存用
+const STORAGE_KEY_MISSION_INDEX = 'missionIndex'; // ミッションインデックス保存用
+// 連続記録と週間合計の保存キー
+const STORAGE_KEY_CONSECUTIVE_DAYS = 'consecutiveDays';
+const STORAGE_KEY_WEEKLY_STEPS = 'weeklySteps';
 
 // ★ミッションデータ配列 (難易度順)★
 const MISSIONS = [
@@ -35,6 +40,18 @@ const MISSIONS = [
     // 必要に応じてミッションを追加してください
 ];
 
+// ボーナスクエストのデータ定義
+const BONUS_MISSIONS = [
+    // 連続記録：5日連続で5000歩を達成
+    { id: 101, type: 'consecutive', goal: 5, targetSteps: 5000, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
+    // 週間合計：1週間で35,000歩を達成
+    { id: 102, type: 'weekly', goal: 35000, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
+    // スピードラン：100歩を1分以内 (この実装は少し複雑になるため、今回は連続/週間のみとします)
+];
+
+// ボーナスクエストの状態を保持する変数
+let consecutiveDays = 0;
+let weeklySteps = 0;
 
 // Local Storage用の日付処理 (YYYY-MM-DD形式)
 function getToday() {
@@ -50,8 +67,12 @@ function saveProgress() {
     const today = getToday();
     localStorage.setItem(STORAGE_KEY_STEPS, steps.toString());
     localStorage.setItem(STORAGE_KEY_DATE, today);
-    // ★修正点★ ミッションインデックスも保存
+    // ミッションインデックスも保存
     localStorage.setItem(STORAGE_KEY_MISSION_INDEX, currentMissionIndex.toString()); 
+    // ボーナスデータの保存
+    localStorage.setItem(STORAGE_KEY_CONSECUTIVE_DAYS, consecutiveDays.toString());
+    localStorage.setItem(STORAGE_KEY_WEEKLY_STEPS, weeklySteps.toString());
+    
     console.log(`進行状況を保存しました。歩数: ${steps}, 日付: ${today}, ミッション: ${currentMissionIndex}`);
 }
 
@@ -82,6 +103,41 @@ function renderCurrentMission() {
     // 表示更新
     document.getElementById("message").textContent = "";
     updateProgress(); 
+}
+
+// ボーナスミッションをDOMに表示する関数
+function renderBonusMissions() {
+    bonusQuestList.innerHTML = ''; // リストをクリア
+
+    BONUS_MISSIONS.forEach(mission => {
+        let statusText = '';
+        let currentProgress = 0;
+
+        if (mission.type === 'consecutive') {
+            currentProgress = consecutiveDays;
+            statusText = `${consecutiveDays}/${mission.goal} 日連続`;
+        } else if (mission.type === 'weekly') {
+            currentProgress = weeklySteps;
+            statusText = `${weeklySteps.toLocaleString()}/${mission.goal.toLocaleString()} 歩`;
+        }
+        
+        const isCompleted = currentProgress >= mission.goal;
+
+        // ボーナスミッションのHTML構造
+        const html = `
+            <li id="bonus-quest-${mission.id}" class="quest-item ${isCompleted ? 'completed' : ''}">
+                <div class="quest-content">
+                    <span class="quest-icon">${mission.icon}</span> 
+                    <div class="quest-text-bar">
+                        <span id="bonus-description-${mission.id}">${mission.text}</span>
+                        <span class="quest-status">${statusText}</span>
+                    </div>
+                </div>
+                <span class="quest-check" style="opacity: ${isCompleted ? 1 : 0};">✅</span>
+            </li>
+        `;
+        bonusQuestList.insertAdjacentHTML('beforeend', html);
+    });
 }
 
 // ★次のミッションに進む関数★
@@ -118,13 +174,29 @@ function startCounting() {
     const today = getToday();
     const lastSaveDate = localStorage.getItem(STORAGE_KEY_DATE);
     const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
-    // ★修正点★ ミッションインデックスの読み込み
+    // ミッションインデックスの読み込み
     const savedMissionIndex = localStorage.getItem(STORAGE_KEY_MISSION_INDEX); 
+    const savedConsecutiveDays = localStorage.getItem(STORAGE_KEY_CONSECUTIVE_DAYS);
+const savedWeeklySteps = localStorage.getItem(STORAGE_KEY_WEEKLY_STEPS);
 
     // 日付チェック (歩数のみリセット)
     if (lastSaveDate !== today) {
         steps = 0;
         localStorage.setItem(STORAGE_KEY_DATE, today);
+
+    // 連続記録の判定とリセット
+    // 前日の歩数が目標を達成していなければ連続記録をリセット
+    const lastDaySteps = parseInt(localStorage.getItem(STORAGE_KEY_STEPS) || '0', 10);
+    const targetStepsForConsecutive = 5000; // 5000歩を連続達成の基準とする
+
+    if (lastDaySteps >= targetStepsForConsecutive) {
+        // 連続記録を1日追加
+        consecutiveDays = parseInt(savedConsecutiveDays || '0', 10) + 1;
+    } else {
+        // 目標未達のためリセット
+        consecutiveDays = 0;
+    }
+    
     } else if (savedSteps !== null) {
         steps = parseInt(savedSteps, 10) || 0;
     }
@@ -133,12 +205,20 @@ function startCounting() {
     if (savedMissionIndex !== null) {
         currentMissionIndex = parseInt(savedMissionIndex, 10) || 0;
     }
+    // ボーナス変数の読み込み
+    if (savedConsecutiveDays !== null) {
+        consecutiveDays = parseInt(savedConsecutiveDays, 10) || 0;
+    }
+    if (savedWeeklySteps !== null) {
+        weeklySteps = parseInt(savedWeeklySteps, 10) || 0;
+    }
 
     gravity = { x: 0, y: 0, z: 0 };
     lastStepTime = 0;
     stepCountElement.textContent = steps;
     
     renderCurrentMission(); // 読み込んだミッションをレンダリング
+    renderBonusMissions(); // ボーナスミッションのレンダリング
 
     // iOSの許可を求めるためのコード（変更なし）
     if (typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -197,8 +277,14 @@ function handleMotion(event) {
         stepCountElement.textContent = steps;
         lastStepTime = now;
 
+        // 週間合計も加算
+        weeklySteps++;
+
         checkMission();
         updateProgress();
+
+        // ボーナスミッションの再描画
+        renderBonusMissions();
     }
 }
 
