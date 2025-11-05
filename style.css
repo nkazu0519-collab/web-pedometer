@@ -1,52 +1,64 @@
+:root {
+    /* カラーテーマ変数（後で一括変更しやすい） */
+    --bg-green: #98FF98;
+    --title-color: #333;
+    --step-blue: #007bff;
+    --quest-green: #64A33B;
+    --start-green: #28a745;
+    --stop-red: #dc3545;
+    --success-green: #28a745;
+}
+
 body {
-    /* 背景色を薄いグリーンにし、中央寄せの基盤を作る */
-    background-color: #98FF98;
+    /* 背景色 & レイアウト */
+    background-color: var(--bg-green);
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 2vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center; /* 左右中央寄せ */
+    align-items: center;
     justify-content: flex-start;
     text-align: center;
 }
 
 h1 {
-    /* ADVENTURE STEPS */
-    color: #333;
-    font-size: 8vw; /* タイトルを大きく */
+    /* タイトル（可変サイズ） */
+    color: var(--title-color);
+    font-size: clamp(28px, 8vw, 64px);
     margin-bottom: 3vh;
 }
 
 h2 {
-    /* YOUR QUESTS */
-    color: #333;
-    font-size: 6vw; /* 見出しを大きく */
+    /* 見出し */
+    color: var(--title-color);
+    font-size: clamp(20px, 6vw, 48px);
     margin-top: 5vh;
     margin-bottom: 3vh;
 }
 
-/* --- ステップ数表示エリア --- */
+/* ===============================
+   歩数表示エリア
+   =============================== */
 #step-count {
-    /* 最も大きく目立たせる */
-    font-size: 20vw; /* 大幅に拡大 */
+    /* 特大サイズでわかりやすく */
+    font-size: clamp(60px, 20vw, 140px);
     font-weight: 900;
-    color: #007bff;
+    color: var(--step-blue);
     display: block;
     margin: 2vh 0 4vh 0;
 }
 
-/* --- プログレスバー --- */
-#progress {
-    width: 90%;
-    max-width: 400px;
-    height: 2.5vh;
-    margin: 4vh auto;
-    display: block;
+#label-steps {
+    font-size: clamp(16px, 4vw, 28px);
+    margin-bottom: 5px;
+    color: #444;
 }
 
-/* --- クエストリスト --- */
+/* ===============================
+   クエスト表示
+   =============================== */
 #quests-list {
     width: 90%;
     max-width: 450px;
@@ -54,37 +66,33 @@ h2 {
     padding: 0;
 }
 
-/* --- 個別のクエストアイテム (緑色のボックス) --- */
+/* --- クエスト枠 --- */
 .quest-item {
-    /* 100歩達成 の文字 */
-    background-color: #64A33B;
+    background-color: var(--quest-green);
     color: white;
-    padding: 15px; /* パディングを大きく */
+    padding: 15px;
     margin-bottom: 15px;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    
-    /* 要素を横並びにするためのFlexbox設定 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+
     display: flex;
     align-items: center;
-    justify-content: space-between; /* 両端揃え */
-    
+    justify-content: space-between;
     position: relative;
-    overflow: hidden; /* 進捗バーのため */
+    overflow: hidden;
 }
 
-/* --- アイコンとテキスト部分のコンテナ --- */
+/* --- アイコン＆テキスト --- */
 .quest-content {
     display: flex;
     align-items: center;
-    gap: 15px; /* アイコンと文字の間隔 */
+    gap: 15px;
 }
 
 .quest-icon {
-    font-size: 2.5rem; /* 大きめのアイコン */
+    font-size: 2.5rem;
 }
 
-/* --- テキストと進捗バーの配置 --- */
 .quest-text-bar {
     display: flex;
     flex-direction: column;
@@ -92,37 +100,38 @@ h2 {
     gap: 5px;
 }
 
-/* --- 達成チェックマーク --- */
+/* チェックマーク（達成時） */
 .quest-check {
     font-size: 2rem;
     color: #fff;
-    opacity: 0; /* ★初期状態では非表示★ */
+    opacity: 0;
     transition: opacity 0.3s;
 }
 
-/* --- 達成時のスタイル --- */
 .quest-item.completed .quest-check {
-    opacity: 1; /* 達成時にチェックマークを表示 */
+    opacity: 1;
 }
 
-/* --- カスタム進捗バー (画像下部の薄いライン) --- */
+/* 進捗バー */
 .custom-progress-bar {
     width: 100%;
     height: 6px;
-    background-color: rgba(255, 255, 255, 0.3); /* 薄い白の背景 */
+    background-color: rgba(255,255,255,0.3);
     border-radius: 3px;
     margin-top: 5px;
 }
 
 .progress-fill {
     height: 100%;
-    width: 0%; /* ★JavaScriptでこの幅を変更します★ */
-    background-color: #f0fff0; /* 達成度を示す白のバー */
+    width: 0%; /* JSで操作 */
+    background-color: #f0fff0;
     border-radius: 3px;
-    transition: width 0.3s ease-in-out;
+    transition: width 0.3s ease;
 }
 
-/* --- ボタンコンテナ --- */
+/* ===============================
+   ボタン配置
+   =============================== */
 #button-container {
     display: flex;
     justify-content: center;
@@ -131,57 +140,51 @@ h2 {
 }
 
 button {
-    padding: 3vw 6vw; /* ボタンサイズを大きく */
-    font-size: 4.5vw; /* ボタンの文字を拡大 */
+    padding: 3vw 6vw;
+    font-size: clamp(16px, 4.5vw, 28px);
     cursor: pointer;
     border: none;
-    border-radius: 10px; /* 角を丸く */
+    border-radius: 10px;
     transition: background-color 0.3s;
     font-weight: bold;
     width: 40vw;
-    max-width: 180px; /* 幅を統一して押しやすく */
+    max-width: 180px;
 }
 
 #start-button {
-    background-color: #28a745;
+    background-color: var(--start-green);
     color: white;
 }
 
 #stop-button {
-    background-color: #dc3545;
+    background-color: var(--stop-red);
     color: white;
 }
 
-/* --- メッセージエリア（「やったね！クエスト達成！」） --- */
+/* ===============================
+   メッセージ表示（達成通知）
+   =============================== */
 #message {
-    font-size: 5vw; /* メッセージを大きく目立たせる */
-    color: #28a745;
+    font-size: clamp(18px, 5vw, 36px);
+    color: var(--success-green);
     font-weight: bold;
     height: 3vh;
     margin-top: 4vh;
 }
 
-#label-steps {
-    /* 現在の文字サイズから大きく調整 */
-    font-size: 4vw; 
-    /* 必要に応じて、下に続く数字（歩数）との間隔も調整 */
-    margin-bottom: 5px; 
-    color: #444;
-}
-
-
-/* --- 花火の演出エリア (追加) --- */
+/* ===============================
+   花火演出用
+   =============================== */
 #fireworks-container {
-    position: fixed; /* 画面に固定し、他のUIの上に重ねる */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 9999; /* 最前面に表示 */
-    pointer-events: none; /* 下のボタンが操作できるようにする */
+    z-index: 9999;
+    pointer-events: none;
 }
 
-/* 花火の破片（パーティクル）の基本形 */
 .firework {
     position: absolute;
     width: 5px;
@@ -189,18 +192,18 @@ button {
     border-radius: 50%;
 }
 
-/* 花火が広がるアニメーション（追加） */
+/* 花火アニメーション */
 @keyframes explode {
     0% {
         transform: scale(0);
         opacity: 1;
     }
     10% {
-        transform: scale(1); /* 爆発で大きく */
+        transform: scale(1);
         opacity: 1;
     }
     100% {
-        transform: scale(2.5); /* さらに広がりながら消える */
+        transform: scale(2.5);
         opacity: 0;
     }
 }

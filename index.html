@@ -5,41 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADVENTURE STEPS</title>
 
-    <!-- スマホのステータスバー色 -->
+    <!-- スマホブラウザのステータスバー色設定 -->
     <meta name="theme-color" content="#98FF98">
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 花火演出 -->
+
+    <!-- 歩数達成時に表示される花火エフェクト -->
     <div id="fireworks-container"></div>
 
     <main>
+
+        <!-- タイトル -->
         <h1>ADVENTURE STEPS</h1>
 
-        <!-- 今日の歩数 -->
+        <!-- 現在の歩数を表示 -->
         <p id="label-steps">今日の歩数:</p>
         <p id="step-count-container">
+            <!-- screen readerに配慮 -->
             <span id="step-count" aria-live="polite" aria-atomic="true">0</span>
         </p>
 
-        <!-- START / STOP ボタン -->
+        <!-- 計測ボタン -->
         <div id="button-container">
             <button id="start-button" type="button">START</button>
             <button id="stop-button" type="button">STOP</button>
         </div>
 
-        <!-- 現在のクエスト -->
-        <h2>クエスト</h2>
-        <div id="current-quest-container">読み込み中...</div>
+        <!-- 現在のクエスト表示 -->
+        <section id="current-quest-section">
+            <h2>クエスト</h2>
+            <div id="current-quest-container">読み込み中...</div>
+        </section>
 
         <!-- 達成メッセージ -->
         <p id="message" aria-live="polite"></p>
 
-        <!-- ボーナスクエスト -->
-        <ul id="bonus-quests-list"></ul>
+        <!-- ボーナスクエスト一覧 -->
+        <section id="bonus-quests-section">
+            <ul id="bonus-quests-list"></ul>
+        </section>
+
     </main>
 
+    <!-- JS読み込み -->
     <script src="script.js" defer></script>
 </body>
 </html>

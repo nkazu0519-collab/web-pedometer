@@ -1,408 +1,546 @@
-// HTML要素を取得
-const stepCountElement = document.getElementById('step-count');
-const startButton = document.getElementById('start-button');
-const stopButton = document.getElementById('stop-button');
-// ミッションを表示するコンテナを取得
-const currentQuestContainer = document.getElementById('current-quest-container'); 
-// ボーナスクエストのコンテナ
-const bonusQuestList = document.getElementById('bonus-quests-list');
+/* ---------------------------
+   定数 / 設定（調整しやすい）
+   --------------------------- */
+const CONFIG = {
+  // 歩数判定: 大きいほどカウントしにくい（デバイス差あり）
+  THRESHOLD: 10.0,
+  // 人間の歩行では300〜700ms程度。小さめにすると誤検出が増える
+  STEP_INTERVAL: 400,
+  // ローパスフィルタ（重力抽出）の係数（0〜1）
+  ALPHA: 0.9,
+  // ミッション切り替え時の演出待ち(ms)
+  TRANSITION_DELAY: 1500,
+  // 花火数（負荷を見て調整）
+  FIREWORK_COUNT: 12,
+  // デフォルト連続判定対象の前日目標（例: 5000）
+  DEFAULT_CONSECUTIVE_TARGET: 5000,
+};
 
-// リセットボタン
-const resetButton = document.getElementById('reset-button');
+/* ---------------------------
+   LocalStorage キー（定義集）
+   --------------------------- */
+const KEYS = {
+  STEPS: 'pedometerSteps',
+  DATE: 'pedometerDate',
+  MISSION_INDEX: 'missionIndex',
+  CONSECUTIVE: 'consecutiveDays',
+  WEEKLY_STEPS: 'weeklySteps',
+  WEEK_NUMBER: 'pedometerWeekNumber', // 週番号保持用
+};
 
-// 変数の初期設定
-let steps = 0;
-let isCounting = false;
-let lastStepTime = 0; 
-let gravity = { x: 0, y: 0, z: 0};
-let currentMissionIndex = 0; // ★追加★ 現在進行中のミッションのインデックス
+/* ---------------------------
+   グローバル状態（state オブジェクトで管理）
+   --------------------------- */
+const state = {
+  steps: 0,
+  isCounting: false,
+  lastStepTime: 0,
+  gravity: { x: 0, y: 0, z: 0 },
+  missionIndex: 0,
+  consecutiveDays: 0,
+  weeklySteps: 0,
+  missionCompletedLock: false, // ミッション完了の二重発火防止フラグ
+  motionListenerRegistered: false, // devicemotion の登録状況
+};
 
-// 定数（チューニング用）
-const THRESHOLD = 10.0; // 歩数判定の閾値（最適値）
-const STEP_INTERVAL = 400; // 歩行感覚の最小時間(ms)
-const ALPHA = 0.9; // 重力成分を抽出するフィルタ係数
-// QUEST_GOALは不要になるため削除
-const GOAL_BAR_WIDTH = 100; 
-const TRANSITION_DELAY = 1500; // 達成メッセージ表示から次のミッションへの移行時間(ms)
+/* ---------------------------
+   DOM 要素キャッシュ
+   --------------------------- */
+const $ = {
+  stepCount: document.getElementById('step-count'),
+  startBtn: document.getElementById('start-button'),
+  stopBtn: document.getElementById('stop-button'),
+  resetBtn: document.getElementById('reset-button'),
+  currentQuestContainer: document.getElementById('current-quest-container'),
+  bonusQuestList: document.getElementById('bonus-quests-list'),
+  message: document.getElementById('message'),
+  fireworksContainer: document.getElementById('fireworks-container'),
+};
 
-// Local Storageのキー
-const STORAGE_KEY_STEPS = 'pedometerSteps';
-const STORAGE_KEY_DATE = 'pedometerDate';
-const STORAGE_KEY_MISSION_INDEX = 'missionIndex'; // ミッションインデックス保存用
-// 連続記録と週間合計の保存キー
-const STORAGE_KEY_CONSECUTIVE_DAYS = 'consecutiveDays';
-const STORAGE_KEY_WEEKLY_STEPS = 'weeklySteps';
-
-// ★ミッションデータ配列 (難易度順)★
+/* ---------------------------
+   ミッション定義（必要に応じて追加）
+   --------------------------- */
 const MISSIONS = [
-    { id: 1, goal: 100, text: '初級: 100歩達成', icon: '👟' },
-    // 必要に応じてミッションを追加してください
+  { id: 1, goal: 100, text: '初級: 100歩達成', icon: '👟' },
+  { id: 2, goal: 500, text: 'ウォーミングアップ: 500歩達成', icon: '🏃' },
+  { id: 3, goal: 1000, text: '基礎訓練: 1,000歩達成', icon: '⛰️' },
+  { id: 4, goal: 5000, text: 'デイリー目標: 5,000歩達成', icon: '🏅' },
+  { id: 5, goal: 7777, text: 'シークレットボーナス: 7,777歩！', icon: '🎁' },
 ];
 
-// ボーナスクエストのデータ定義
+/* ---------------------------
+   ボーナスクエスト定義
+   --------------------------- */
 const BONUS_MISSIONS = [
-    // 連続記録：5日連続で5000歩を達成
-    { id: 101, type: 'consecutive', goal: 5, targetSteps: 5000, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
-    // 週間合計：1週間で35,000歩を達成
-    { id: 102, type: 'weekly', goal: 35000, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
-    // スピードラン：100歩を1分以内 (この実装は少し複雑になるため、今回は連続/週間のみとします)
+  { id: 101, type: 'consecutive', goal: 5, targetSteps: 5000, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
+  { id: 102, type: 'weekly', goal: 35000, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
 ];
 
-// ボーナスクエストの状態を保持する変数
-let consecutiveDays = 0;
-let weeklySteps = 0;
-
-// Local Storage用の日付処理 (YYYY-MM-DD形式)
-function getToday() {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+/* ---------------------------
+   ユーティリティ（日時・週番号）
+   --------------------------- */
+/** 今日の日付（YYYY-MM-DD）を返す */
+function getTodayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// 進行状況をLocal Storageに保存する関数
-function saveProgress() {
-    const today = getToday();
-    localStorage.setItem(STORAGE_KEY_STEPS, steps.toString());
-    localStorage.setItem(STORAGE_KEY_DATE, today);
-    // ミッションインデックスも保存
-    localStorage.setItem(STORAGE_KEY_MISSION_INDEX, currentMissionIndex.toString()); 
-    // ボーナスデータの保存
-    localStorage.setItem(STORAGE_KEY_CONSECUTIVE_DAYS, consecutiveDays.toString());
-    localStorage.setItem(STORAGE_KEY_WEEKLY_STEPS, weeklySteps.toString());
-    
-    console.log(`進行状況を保存しました。歩数: ${steps}, 日付: ${today}, ミッション: ${currentMissionIndex}`);
+/** 年・週番号を返す（ISO 週番号の簡易版） */
+function getYearWeek() {
+  const d = new Date();
+  // 木曜日を含む週をその年の1週目とするISO週の近似
+  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = tmp.getUTCDay() || 7;
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
+  return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
 
-// ★現在のミッションをDOMに表示する関数★
-function renderCurrentMission() {
-    const mission = MISSIONS[currentMissionIndex];
-    if (!mission) {
-        currentQuestContainer.innerHTML = '<li class="quest-item completed"><div class="quest-content">🎉 全てのクエストをクリアしました！</div></li>';
-        return;
-    }
-
-    // 動的にミッション要素を生成
-    currentQuestContainer.innerHTML = `
-        <li id="current-quest" class="quest-item" data-goal="${mission.goal}">
-            <div class="quest-content">
-                <span class="quest-icon">${mission.icon}</span> 
-                <div class="quest-text-bar">
-                    <span id="quest-description">${mission.text}</span>
-                    <div class="custom-progress-bar">
-                        <div id="quest-progress-fill" class="progress-fill"></div>
-                    </div>
-                </div>
-            </div>
-            <span id="quest-check" class="quest-check">✅</span>
-        </li>
-    `;
-    
-    // 表示更新
-    document.getElementById("message").textContent = "";
-    updateProgress(); 
-}
-
-// ボーナスミッションをDOMに表示する関数
-function renderBonusMissions() {
-    bonusQuestList.innerHTML = ''; // リストをクリア
-
-    BONUS_MISSIONS.forEach(mission => {
-        let statusText = '';
-        let currentProgress = 0;
-
-        if (mission.type === 'consecutive') {
-            currentProgress = consecutiveDays;
-            statusText = `${consecutiveDays}/${mission.goal} 日連続`;
-        } else if (mission.type === 'weekly') {
-            currentProgress = weeklySteps;
-            statusText = `${weeklySteps.toLocaleString()}/${mission.goal.toLocaleString()} 歩`;
-        }
-        
-        const isCompleted = currentProgress >= mission.goal;
-
-        // ボーナスミッションのHTML構造
-        const html = `
-            <li id="bonus-quest-${mission.id}" class="quest-item ${isCompleted ? 'completed' : ''}">
-                <div class="quest-content">
-                    <span class="quest-icon">${mission.icon}</span> 
-                    <div class="quest-text-bar">
-                        <span id="bonus-description-${mission.id}">${mission.text}</span>
-                        <span class="quest-status">${statusText}</span>
-                    </div>
-                </div>
-                <span class="quest-check" style="opacity: ${isCompleted ? 1 : 0};">✅</span>
-            </li>
-        `;
-        bonusQuestList.insertAdjacentHTML('beforeend', html);
+/* ---------------------------
+   状態の保存 / 読み込み
+   - 保存は小まめに行う（visibilitychange もフック）
+   --------------------------- */
+function saveState() {
+  try {
+    localStorage.setItem(KEYS.STEPS, String(state.steps));
+    localStorage.setItem(KEYS.DATE, getTodayISO());
+    localStorage.setItem(KEYS.MISSION_INDEX, String(state.missionIndex));
+    localStorage.setItem(KEYS.CONSECUTIVE, String(state.consecutiveDays));
+    localStorage.setItem(KEYS.WEEKLY_STEPS, String(state.weeklySteps));
+    localStorage.setItem(KEYS.WEEK_NUMBER, getYearWeek());
+    // デバッグログ
+    console.log('[saveState] 保存しました', {
+      steps: state.steps,
+      missionIndex: state.missionIndex,
+      consecutiveDays: state.consecutiveDays,
+      weeklySteps: state.weeklySteps,
     });
+  } catch (e) {
+    console.warn('localStorage への保存に失敗しました', e);
+  }
 }
 
-// ★次のミッションに進む関数★
-function moveToNextMission() {
-    // 達成メッセージを出す
-    document.getElementById("message").textContent = `🎉 クエスト達成: ${MISSIONS[currentMissionIndex].text}！`;
+/** 起動時に localStorage から状態を読み込む（必要な初期化もここで） */
+function loadStateOnStart() {
+  const savedSteps = parseInt(localStorage.getItem(KEYS.STEPS), 10);
+  const savedDate = localStorage.getItem(KEYS.DATE);
+  const savedMissionIndex = parseInt(localStorage.getItem(KEYS.MISSION_INDEX), 10);
+  const savedConsecutive = parseInt(localStorage.getItem(KEYS.CONSECUTIVE), 10);
+  const savedWeekly = parseInt(localStorage.getItem(KEYS.WEEKLY_STEPS), 10);
+  const savedWeekNo = localStorage.getItem(KEYS.WEEK_NUMBER);
+  const today = getTodayISO();
+  const thisWeek = getYearWeek();
 
-    // インデックスを進める
-    currentMissionIndex++;
+  // 週間リセット：週番号が変わっていたら weeklySteps を 0 にする
+  if (savedWeekNo && savedWeekNo !== thisWeek) {
+    state.weeklySteps = 0;
+  } else {
+    state.weeklySteps = Number.isFinite(savedWeekly) ? savedWeekly : 0;
+  }
 
-    // 全ミッションをクリアしたかチェック
-    if (currentMissionIndex < MISSIONS.length) {
-        renderCurrentMission(); // 次のミッションがあればレンダリング
+  // 日付が変わっていた場合は日次リセット（steps を 0 スタート）して連続判定を評価
+  if (savedDate && savedDate !== today) {
+    const yesterdaySteps = Number.isFinite(savedSteps) ? savedSteps : 0;
+    // 前日が目標（DEFAULT_CONSECUTIVE_TARGET）を満たしていれば consecutiveDays++、そうでなければリセット
+    if (yesterdaySteps >= CONFIG.DEFAULT_CONSECUTIVE_TARGET) {
+      state.consecutiveDays = (Number.isFinite(savedConsecutive) ? savedConsecutive : 0) + 1;
     } else {
-        // 全クリア時の表示
-        renderCurrentMission(); // 全クリアメッセージをレンダリング
+      state.consecutiveDays = 0;
     }
-    
-    saveProgress(); // 新しいインデックスを保存
+    state.steps = 0;
+    // 日付を新しく保存（次回チェック用）
+    localStorage.setItem(KEYS.DATE, today);
+  } else {
+    // 同じ日なら保存された歩数を復元
+    state.steps = Number.isFinite(savedSteps) ? savedSteps : 0;
+    state.consecutiveDays = Number.isFinite(savedConsecutive) ? savedConsecutive : 0;
+  }
+
+  // ミッションインデックスを復元（存在すれば）
+  state.missionIndex = Number.isFinite(savedMissionIndex) ? savedMissionIndex : 0;
 }
 
-// 歩数カウントを開始する関数
-function startCounting() {
-    if (isCounting) return;
+/* ---------------------------
+   レンダリング系関数（DOM を扱う部分）
+   - innerHTML を多用せず、更新は最小化
+   --------------------------- */
 
-    if (!('DeviceMotionEvent' in window)) {
-        alert('お使いの端末では歩数計機能が利用できません。');
-        return;
-    }
+/** 現在のミッションを表示（シンプルに置換） */
+function renderCurrentMission() {
+  const mission = MISSIONS[state.missionIndex];
+  $.currentQuestContainer.innerHTML = ''; // クリア
 
-    isCounting = true;
-    
-    // --- 1. すべての保存データを取得 ---
-    const today = getToday();
-    const lastSaveDate = localStorage.getItem(STORAGE_KEY_DATE);
-    const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
-    const savedMissionIndex = localStorage.getItem(STORAGE_KEY_MISSION_INDEX); 
-    const savedConsecutiveDays = localStorage.getItem(STORAGE_KEY_CONSECUTIVE_DAYS);
-    const savedWeeklySteps = localStorage.getItem(STORAGE_KEY_WEEKLY_STEPS);
-    
-    // --- 2. データの初期化/読み込み（計算に必要な値をまず変数に入れる） ---
-    // 保存されていた歩数とボーナスミッションの状態を一時的にロード
-    let stepsToLoad = parseInt(savedSteps, 10) || 0;
-    let consecutiveDaysToLoad = parseInt(savedConsecutiveDays, 10) || 0;
-    let weeklyStepsToLoad = parseInt(savedWeeklySteps, 10) || 0;
-    
-    // --- 3. 日付チェックと連続記録の判定ロジック ---
-    if (lastSaveDate !== today) {
-        // ★日付が変わった場合★
-        const targetStepsForConsecutive = 5000; 
-        const lastDaySteps = stepsToLoad; // 昨日までの歩数
-        
-        // 連続記録の判定ロジック（昨日分の達成をチェック）
-        if (lastDaySteps >= targetStepsForConsecutive) {
-            // 前日目標達成 → 連続記録を1日追加
-            consecutiveDays = consecutiveDaysToLoad + 1;
-        } else {
-            // 前日目標未達 → 連続記録をリセット
-            consecutiveDays = 0;
-        }
-        
-        // 当日の歩数は0からスタート
-        steps = 0;
-        localStorage.setItem(STORAGE_KEY_DATE, today); // 新しい日付を保存
-    } else { 
-        // ★日付が変わっていない場合★
-        // 保存データをそのまま引き継ぐ
-        steps = stepsToLoad;
-        consecutiveDays = consecutiveDaysToLoad;
-        weeklySteps = weeklyStepsToLoad;
-    }
-    
-    // --- 4. ミッションインデックスの読み込み ---
-    // ミッションインデックスは日付が変わっても引き継ぐ
-    if (savedMissionIndex !== null) {
-        currentMissionIndex = parseInt(savedMissionIndex, 10) || 0;
-    }
-    
-    // --- 5. 画面と計測の準備 ---
-    gravity = { x: 0, y: 0, z: 0 };
-    lastStepTime = 0;
-    stepCountElement.textContent = steps;
-    
-    renderCurrentMission(); 
-    renderBonusMissions(); 
+  if (!mission) {
+    // 全ミッションクリア表示
+    const li = document.createElement('li');
+    li.className = 'quest-item completed';
+    li.innerHTML = `<div class="quest-content">🎉 全てのクエストをクリアしました！</div>`;
+    $.currentQuestContainer.appendChild(li);
+    return;
+  }
 
-    // iOSの許可を求めるためのコード（変更なし）
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission().then(permissionState => {
-            if (permissionState === 'granted') {
-                window.addEventListener('devicemotion', handleMotion);
-            } else {
-                alert('センサーアクセスが拒否されました。iPhoneの設定を確認してください。');
-                isCounting = false;
-            }
-        }).catch(console.error);
-    } else {
-        window.addEventListener('devicemotion', handleMotion);
-    }
-    console.log('計測を開始しました');
+  // 要素を作って挿入（ID はユニークに管理）
+  const li = document.createElement('li');
+  li.className = 'quest-item';
+  li.dataset.goal = mission.goal;
+
+  const left = document.createElement('div');
+  left.className = 'quest-content';
+
+  const icon = document.createElement('span');
+  icon.className = 'quest-icon';
+  icon.textContent = mission.icon;
+
+  const textBar = document.createElement('div');
+  textBar.className = 'quest-text-bar';
+
+  const desc = document.createElement('span');
+  desc.className = 'quest-description';
+  desc.textContent = mission.text;
+
+  // 進捗バー（カスタム）
+  const progressWrap = document.createElement('div');
+  progressWrap.className = 'custom-progress-bar';
+  const fill = document.createElement('div');
+  fill.className = 'progress-fill';
+  fill.id = 'quest-progress-fill'; // 更新しやすくするため一意にする
+  progressWrap.appendChild(fill);
+
+  textBar.appendChild(desc);
+  textBar.appendChild(progressWrap);
+
+  left.appendChild(icon);
+  left.appendChild(textBar);
+
+  const check = document.createElement('span');
+  check.className = 'quest-check';
+  check.id = 'quest-check';
+  check.textContent = '✅';
+  check.style.opacity = '0';
+
+  li.appendChild(left);
+  li.appendChild(check);
+
+  $.currentQuestContainer.appendChild(li);
+
+  // メッセージクリア & 進捗更新
+  $.message.textContent = '';
+  updateProgress();
 }
 
-// 歩数カウントを停止する関数 (変更なし)
-function stopCounting() {
-    if (!isCounting) return;
-    isCounting = false;
-    window.removeEventListener('devicemotion', handleMotion);
-    saveProgress();
-    console.log('計測を停止しました');
+/** ボーナスクエスト一覧を描画 */
+function renderBonusMissions() {
+  $.bonusQuestList.innerHTML = '';
+  BONUS_MISSIONS.forEach((m) => {
+    const li = document.createElement('li');
+    const progressText = m.type === 'consecutive'
+      ? `${state.consecutiveDays}/${m.goal} 日連続`
+      : `${state.weeklySteps.toLocaleString()}/${m.goal.toLocaleString()} 歩`;
+
+    const isCompleted = (m.type === 'consecutive') ? (state.consecutiveDays >= m.goal) : (state.weeklySteps >= m.goal);
+
+    li.id = `bonus-quest-${m.id}`;
+    li.className = `quest-item ${isCompleted ? 'completed' : ''}`;
+
+    li.innerHTML = `
+      <div class="quest-content">
+        <span class="quest-icon">${m.icon}</span>
+        <div class="quest-text-bar">
+          <span class="quest-description">${m.text}</span>
+          <span class="quest-status">${progressText}</span>
+        </div>
+      </div>
+      <span class="quest-check" style="opacity:${isCompleted ? 1 : 0}">✅</span>
+    `;
+
+    $.bonusQuestList.appendChild(li);
+  });
 }
 
-// 動きのデータを処理する関数 (中身は省略)
-function handleMotion(event) {
-    // ... (前の回答の加速度センサーの処理ロジックをここに挿入) ...
-    const a = event.accelerationIncludingGravity;
-    if (!a) return; 
-
-    // 重力成分の分離
-    gravity.x = ALPHA * gravity.x + (1 - ALPHA) * a.x;
-    gravity.y = ALPHA * gravity.y + (1 - ALPHA) * a.y;
-    gravity.z = ALPHA * gravity.z + (1 - ALPHA) * a.z;
-
-    // 重力を除いた純粋な加速度
-    const linearAcceleration = {
-        x: a.x - gravity.x,
-        y: a.y - gravity.y,
-        z: a.z - gravity.z
-    };
-
-    // ベクトルの大きさ
-    const magnitude = Math.sqrt(
-        linearAcceleration.x ** 2 +
-        linearAcceleration.y ** 2 +
-        linearAcceleration.z ** 2
-    );
-
-    // 歩数判定
-    const now = Date.now();
-    if (magnitude > THRESHOLD && now - lastStepTime > STEP_INTERVAL) {
-        steps++;
-        stepCountElement.textContent = steps;
-        lastStepTime = now;
-
-        // 週間合計も加算
-        weeklySteps++;
-
-        checkMission();
-        updateProgress();
-
-        // ボーナスミッションの再描画
-        renderBonusMissions();
-    }
-}
-
-// ★現在のミッションのみ進捗バーを更新★
+/* ---------------------------
+   進捗更新（ミッション用）
+   - progress-fill の幅を更新
+   --------------------------- */
 function updateProgress() {
-    const mission = MISSIONS[currentMissionIndex];
-    if (!mission) return; 
+  const mission = MISSIONS[state.missionIndex];
+  if (!mission) return;
 
-    const progressBarFill = document.getElementById("quest-progress-fill");
-    if (progressBarFill) {
-        let progressPercent = Math.min(steps / mission.goal, 1) * GOAL_BAR_WIDTH;
-        progressBarFill.style.width = progressPercent + '%';
-    }
+  const fill = document.getElementById('quest-progress-fill');
+  if (!fill) return;
+
+  // パーセンテージを計算（0〜100）
+  const percent = Math.min(state.steps / mission.goal, 1) * 100;
+  fill.style.width = `${percent}%`;
 }
 
-// ★現在のミッションの達成判定と次のミッションへの移行★
-function checkMission() {
-    const mission = MISSIONS[currentMissionIndex];
-    if (!mission) return; 
+/* ---------------------------
+   ミッション完了処理ガード付き
+   --------------------------- */
+function onMissionAchieved() {
+  if (state.missionCompletedLock) return; // 二重発火防止
+  state.missionCompletedLock = true;
 
-    // 達成判定
-    if (steps >= mission.goal) {
-        const currentQuestElement = document.getElementById("current-quest");
-        const questCheckElement = document.getElementById("quest-check");
-        
-        // 達成アニメーション
-        if (currentQuestElement) currentQuestElement.classList.add('completed');
-        if (questCheckElement) questCheckElement.style.opacity = 1;
+  // UI 更新（チェック表示・クラス追加）
+  const currentLi = document.getElementById('current-quest') || $.currentQuestContainer.querySelector('.quest-item');
+  const check = document.getElementById('quest-check');
 
-        // ミッション達成時に花火を打ち上げる
-        launchFireworks();
+  if (currentLi) currentLi.classList.add('completed');
+  if (check) check.style.opacity = 1;
 
-        // 達成後、指定時間待って次のミッションに移行
-        setTimeout(moveToNextMission, TRANSITION_DELAY); 
-    }
+  // 花火演出
+  launchFireworks();
+
+  // メッセージ表示
+  const mission = MISSIONS[state.missionIndex];
+  if (mission) $.message.textContent = `🎉 クエスト達成: ${mission.text}！`;
+
+  // 保存してから遷移
+  saveState();
+
+  // 一定時間後に次ミッションへ（ロック解除は moveToNextMission 内で行う）
+  setTimeout(() => {
+    moveToNextMission();
+    state.missionCompletedLock = false;
+  }, CONFIG.TRANSITION_DELAY);
 }
 
-// ボタンとウィンドウイベントにリスナーを追加
-startButton.addEventListener('click', startCounting);
-stopButton.addEventListener('click', stopCounting);
-window.addEventListener('beforeunload', saveProgress);
+/* ---------------------------
+   次のミッションへ移動
+   --------------------------- */
+function moveToNextMission() {
+  state.missionIndex++;
+  // ミッションがなければクリア表示
+  if (state.missionIndex >= MISSIONS.length) {
+    state.missionIndex = MISSIONS.length; // 上限固定
+    renderCurrentMission(); // 全クリア表示
+  } else {
+    renderCurrentMission();
+  }
+  saveState();
+  renderBonusMissions();
+}
 
-// アプリ起動時の初期表示
-document.addEventListener('DOMContentLoaded', () => {
-    // 保存されていた歩数とミッションインデックスを読み込む
-    const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
-    const savedMissionIndex = localStorage.getItem(STORAGE_KEY_MISSION_INDEX);
-    const savedConsecutiveDays = localStorage.getItem(STORAGE_KEY_CONSECUTIVE_DAYS);
-    const savedWeeklySteps = localStorage.getItem(STORAGE_KEY_WEEKLY_STEPS);
+/* ---------------------------
+   センサー（DeviceMotion）処理
+   - 重力分離、加速度ベクトル、大きさ判定
+   - Z軸（上下）に少し重みを付けることで誤検出を減らす
+   --------------------------- */
+function handleMotion(event) {
+  // accelerationIncludingGravity がない場合は終了
+  const a = event.accelerationIncludingGravity;
+  if (!a) return;
 
-    if (savedSteps !== null) {
-        steps = parseInt(savedSteps, 10) || 0;
-        stepCountElement.textContent = steps;
-    }
-    if (savedMissionIndex !== null) {
-        currentMissionIndex = parseInt(savedMissionIndex, 10) || 0;
-    }
+  // 重力分離（LPF）
+  state.gravity.x = CONFIG.ALPHA * state.gravity.x + (1 - CONFIG.ALPHA) * a.x;
+  state.gravity.y = CONFIG.ALPHA * state.gravity.y + (1 - CONFIG.ALPHA) * a.y;
+  state.gravity.z = CONFIG.ALPHA * state.gravity.z + (1 - CONFIG.ALPHA) * a.z;
 
-    // ボーナス変数の初期化
-    if (savedConsecutiveDays !== null) {
-        consecutiveDays = parseInt(savedConsecutiveDays, 10) || 0;
-    }
-    if (savedWeeklySteps !== null) {
-        weeklySteps = parseInt(savedWeeklySteps, 10) || 0;
-    }
+  // 重力除去（線形加速度）
+  const lin = {
+    x: a.x - state.gravity.x,
+    y: a.y - state.gravity.y,
+    z: a.z - state.gravity.z,
+  };
 
-    renderCurrentMission(); // 最後に保存したミッションを表示
-    // ページロード時にボーナスミッションを表示★
+  // Z に少し重みを付与（上下揺れを重視）
+  const weightedMagnitude = Math.sqrt(
+    lin.x * lin.x + lin.y * lin.y + (lin.z * 1.2) * (lin.z * 1.2)
+  );
+
+  const now = Date.now();
+  if (weightedMagnitude > CONFIG.THRESHOLD && now - state.lastStepTime > CONFIG.STEP_INTERVAL) {
+    // 歩数カウント
+    state.steps++;
+    state.lastStepTime = now;
+
+    // 画面更新（数値）
+    if ($.stepCount) $.stepCount.textContent = state.steps;
+
+    // 週間合計に加算（週別管理は loadStateOnStart で実施）
+    state.weeklySteps++;
+
+    // 進捗更新とミッションチェック
+    updateProgress();
     renderBonusMissions();
-});
 
-// 花火の色定義
-const FIREWORK_COLORS = [
-    '#FF4500', // OrangeRed
-    '#FFD700', // Gold
-    '#ADFF2F', // GreenYellow
-    '#1E90FF', // DodgerBlue
-    '#FF69B4'  // HotPink
-];
-
-// ★変更点 2：花火を画面中央付近に打ち上げる関数を追加★
-function launchFireworks() {
-    const container = document.getElementById('fireworks-container');
-    if (!container) return;
-    
-    const count = 15; // 一度の演出で打ち上げる花火の数
-    
-    for (let i = 0; i < count; i++) {
-        const firework = document.createElement('div');
-        firework.className = 'firework';
-        
-        // ランダムな色、位置、サイズを設定
-        const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
-        const size = Math.random() * 6 + 4; // 4px から 10px
-        const x = Math.random() * window.innerWidth;
-        
-        // Y座標を画面中央付近 (40%〜60%) に設定
-        const y = window.innerHeight * (0.4 + Math.random() * 0.2); 
-        
-        firework.style.backgroundColor = color;
-        firework.style.width = `${size}px`;
-        firework.style.height = `${size}px`;
-        firework.style.left = `${x}px`;
-        firework.style.top = `${y}px`;
-        
-        // 爆発アニメーションの設定
-        const duration = Math.random() * 1.5 + 0.7; // 0.7s から 2.2s
-        firework.style.animation = `explode ${duration}s ease-out forwards`;
-        firework.style.animationDelay = `${Math.random() * 0.3}s`;
-
-        container.appendChild(firework);
-        
-        // 演出が終わったら要素を削除
-        setTimeout(() => {
-            firework.remove();
-        }, (duration + 0.3) * 1000); 
+    // ミッション達成判定
+    const mission = MISSIONS[state.missionIndex];
+    if (mission && state.steps >= mission.goal) {
+      onMissionAchieved();
     }
+  }
 }
+
+/* ---------------------------
+   計測を開始する（start）
+   - iOS の permission に対応
+   - 重複登録を防止
+   --------------------------- */
+function startCounting() {
+  if (state.isCounting) return;
+  if (!('DeviceMotionEvent' in window)) {
+    alert('お使いの端末では歩数計のセンサーが利用できません。');
+    return;
+  }
+
+  state.isCounting = true;
+
+  // 初期読み込み（ローカルデータの反映）
+  loadStateOnStart();
+  $.stepCount && ($.stepCount.textContent = state.steps);
+  renderCurrentMission();
+  renderBonusMissions();
+
+  // iOS の場合は user gesture 必須で permission を求める
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().then(permissionState => {
+      if (permissionState === 'granted') {
+        registerMotionListener();
+      } else {
+        alert('センサーの利用が拒否されました。iPhone の設定で「モーションと方向」を有効にしてください。');
+        state.isCounting = false;
+      }
+    }).catch(err => {
+      console.error('DeviceMotion requestPermission error', err);
+      state.isCounting = false;
+    });
+  } else {
+    // Android 等：許可不要な環境
+    registerMotionListener();
+  }
+}
+
+/* ---------------------------
+   計測を停止する（stop）
+   --------------------------- */
+function stopCounting() {
+  if (!state.isCounting) return;
+  state.isCounting = false;
+  unregisterMotionListener();
+  saveState();
+  console.log('計測停止');
+}
+
+/* ---------------------------
+   devicemotion の登録 / 解除（重複防止）
+   --------------------------- */
+function registerMotionListener() {
+  if (state.motionListenerRegistered) return;
+  window.addEventListener('devicemotion', handleMotion);
+  state.motionListenerRegistered = true;
+  console.log('devicemotion registered');
+}
+
+function unregisterMotionListener() {
+  if (!state.motionListenerRegistered) return;
+  window.removeEventListener('devicemotion', handleMotion);
+  state.motionListenerRegistered = false;
+  console.log('devicemotion unregistered');
+}
+
+/* ---------------------------
+   リセット（全部リセット）
+   - カウント中なら停止
+   - ストレージも更新
+   --------------------------- */
+function resetAll() {
+  if (state.isCounting) stopCounting();
+
+  state.steps = 0;
+  state.weeklySteps = 0;
+  state.consecutiveDays = 0;
+  state.missionIndex = 0;
+  state.lastStepTime = 0;
+
+  // UI 更新
+  $.stepCount && ($.stepCount.textContent = state.steps);
+  $.message && ($.message.textContent = '👣 データをリセットしました');
+
+  // ローカルストレージを初期化
+  localStorage.setItem(KEYS.STEPS, '0');
+  localStorage.setItem(KEYS.WEEKLY_STEPS, '0');
+  localStorage.setItem(KEYS.CONSECUTIVE, '0');
+  localStorage.setItem(KEYS.MISSION_INDEX, '0');
+  localStorage.setItem(KEYS.DATE, getTodayISO());
+  localStorage.setItem(KEYS.WEEK_NUMBER, getYearWeek());
+
+  renderCurrentMission();
+  renderBonusMissions();
+  saveState();
+}
+
+/* ---------------------------
+   visibility / pagehide 対策
+   - モバイルでは beforeunload が当てにならないため visibilitychange と pagehide で保存
+   --------------------------- */
+function handleVisibilityChange() {
+  if (document.visibilityState === 'hidden') {
+    saveState();
+  }
+}
+window.addEventListener('visibilitychange', handleVisibilityChange);
+window.addEventListener('pagehide', saveState);
+
+/* ---------------------------
+   花火（軽量アニメ） - 負荷に注意
+   --------------------------- */
+const FIREWORK_COLORS = ['#FF4500', '#FFD700', '#ADFF2F', '#1E90FF', '#FF69B4'];
+
+function launchFireworks() {
+  const container = $.fireworksContainer;
+  if (!container) return;
+
+  const count = CONFIG.FIREWORK_COUNT;
+  for (let i = 0; i < count; i++) {
+    const part = document.createElement('div');
+    part.className = 'firework';
+
+    const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
+    const size = Math.random() * 6 + 4; // px
+    const x = Math.random() * window.innerWidth;
+    const y = window.innerHeight * (0.3 + Math.random() * 0.4); // 中央付近
+
+    part.style.backgroundColor = color;
+    part.style.width = `${size}px`;
+    part.style.height = `${size}px`;
+    part.style.left = `${x}px`;
+    part.style.top = `${y}px`;
+
+    const duration = Math.random() * 1.5 + 0.6;
+    part.style.animation = `explode ${duration}s ease-out forwards`;
+    part.style.animationDelay = `${Math.random() * 0.2}s`;
+
+    container.appendChild(part);
+
+    // 演出後に削除
+    setTimeout(() => {
+      part.remove();
+    }, (duration + 0.3) * 1000);
+  }
+}
+
+/* ---------------------------
+   初期セットアップ（イベントリスナ登録等）
+   --------------------------- */
+function initApp() {
+  // DOMContentLoaded 呼び出し済みであれば即実行
+  // すでに読み込み済みの場合は直接実行
+  loadStateOnStart();
+  $.stepCount && ($.stepCount.textContent = state.steps);
+  renderCurrentMission();
+  renderBonusMissions();
+
+  // ボタンイベント
+  $.startBtn && $.startBtn.addEventListener('click', startCounting);
+  $.stopBtn && $.stopBtn.addEventListener('click', stopCounting);
+  $.resetBtn && $.resetBtn.addEventListener('click', resetAll);
+
+  // ページ離脱時に保存（補助）
+  window.addEventListener('beforeunload', saveState);
+}
+
+/* ---------------------------
+   App 起動
+   --------------------------- */
+document.addEventListener('DOMContentLoaded', initApp);
