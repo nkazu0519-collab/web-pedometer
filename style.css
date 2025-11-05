@@ -94,6 +94,7 @@ h2 {
     color: white;
     
     padding: 12px;
+    margin: 0 auto 12px auto;
     margin-bottom: 8px;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
