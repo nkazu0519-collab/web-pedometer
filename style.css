@@ -92,7 +92,7 @@ h2 {
     gap: 5px;
 }
 
-#quest-description {
+.quest-description {
     font-size: 1.2rem;
     font-weight: bold;
 }
@@ -157,6 +157,10 @@ button {
     color: white;
 }
 
+#reset-button {
+    background-color: #6c757d; /* ニュートラルなグレー */
+    color: white;
+}
 /* --- メッセージエリア（「やったね！クエスト達成！」） --- */
 #message {
     font-size: 5vw; /* メッセージを大きく目立たせる */
@@ -208,23 +212,4 @@ button {
         transform: scale(2.5); /* さらに広がりながら消える */
         opacity: 0;
     }
-}
-
-/* 1. メインミッションコンテナの下側の余白をリセット */
-#current-quest-container {
-    margin-bottom: 0 !important; 
-    padding-bottom: 0 !important; 
-}
-
-/* 2. メッセージエリア (#message) の上下の余白を強制的に排除 */
-#message {
-    margin-top: 0 !important;    
-    margin-bottom: 0 !important; 
-    height: 1.5rem; /* テキストがない時も高さを確保 */
-}
-
-/* 3. ボーナスミッションリストの上側の余白をリセット */
-#bonus-quests-list {
-    margin-top: 0 !important;
-    padding-top: 0 !important; 
 }

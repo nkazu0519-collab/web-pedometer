@@ -1,34 +1,45 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADVENTURE STEPS</title>
-    
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+    <!-- クエスト達成時の花火アニメーション -->
     <div id="fireworks-container"></div>
+
     <h1>ADVENTURE STEPS</h1>
-    
-    <p id="label-steps">今日の歩数:</p>
-    <p id="step-count-container"><span id="step-count">0</span></p> 
-    
+
+    <p id="label-steps">
+        今日の歩数: <span id="step-count">0</span>
+    </p>
+
     <div id="button-container">
         <button id="start-button">START</button>
         <button id="stop-button">STOP</button>
+        <!--歩数リセット機能の追加-->>
+        <button id="reset-button">RESET</button>
     </div>
 
-    <h2>クエスト</h2>
-    
+    <h2>今日のクエスト</h2>
     <div id="current-quest-container">
-        </div>
+        <!-- JSで挿入 -->
+    </div>
 
     <p id="message"></p>
 
+    <h2>ボーナスクエスト</h2>
     <ul id="bonus-quests-list">
-        </ul>
+        <!-- JSで追加 -->
+    </ul>
 
     <script src="script.js"></script>
 </body>
+
 </html>

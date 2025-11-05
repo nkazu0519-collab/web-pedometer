@@ -7,6 +7,9 @@ const currentQuestContainer = document.getElementById('current-quest-container')
 // ボーナスクエストのコンテナ
 const bonusQuestList = document.getElementById('bonus-quests-list');
 
+// リセットボタン
+const resetButton = document.getElementById('reset-button');
+
 // 変数の初期設定
 let steps = 0;
 let isCounting = false;
@@ -304,6 +307,34 @@ function updateProgress() {
     }
 }
 
+// リセット関数
+function resetSteps() {
+    // 1. カウント中の場合は停止する
+    if (isCounting) {
+        stopCounting();
+    }
+    
+    // 2. 歩数と週間合計をリセット
+    steps = 0;
+    weeklySteps = 0; // 週間合計も同時にリセット
+    consecutiveDays = 0; // 連続記録もリセット
+    
+    // 3. 画面を更新
+    stepCountElement.textContent = steps;
+    document.getElementById("message").textContent = "👣 全ての歩数データをリセットしました。";
+    
+    // 4. ローカルストレージを更新
+    localStorage.setItem(STORAGE_KEY_STEPS, '0');
+    localStorage.setItem(STORAGE_KEY_WEEKLY_STEPS, '0');
+    localStorage.setItem(STORAGE_KEY_CONSECUTIVE_DAYS, '0');
+    
+    // 5. プログレスとボーナスの表示を更新
+    updateProgress();
+    renderBonusMissions();
+
+    console.log('歩数、週間合計、連続記録がリセットされました。');
+}
+
 // ★現在のミッションの達成判定と次のミッションへの移行★
 function checkMission() {
     const mission = MISSIONS[currentMissionIndex];
@@ -330,6 +361,9 @@ function checkMission() {
 startButton.addEventListener('click', startCounting);
 stopButton.addEventListener('click', stopCounting);
 window.addEventListener('beforeunload', saveProgress);
+
+// リセットボタンにイベントリスナーを追加
+resetButton.addEventListener('click', resetSteps);
 
 // アプリ起動時の初期表示
 document.addEventListener('DOMContentLoaded', () => {
