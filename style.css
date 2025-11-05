@@ -8,7 +8,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center; /* 左右中央寄せ */
-    justify-content: center;
+    justify-content: flex-start;
     text-align: center;
 }
 
@@ -208,4 +208,23 @@ button {
         transform: scale(2.5); /* さらに広がりながら消える */
         opacity: 0;
     }
+}
+
+/* 1. メインミッションコンテナの下側の余白をリセット */
+#current-quest-container {
+    margin-bottom: 0 !important; 
+    padding-bottom: 0 !important; 
+}
+
+/* 2. メッセージエリア (#message) の上下の余白を強制的に排除 */
+#message {
+    margin-top: 0 !important;    
+    margin-bottom: 0 !important; 
+    height: 1.5rem; /* テキストがない時も高さを確保 */
+}
+
+/* 3. ボーナスミッションリストの上側の余白をリセット */
+#bonus-quests-list {
+    margin-top: 0 !important;
+    padding-top: 0 !important; 
 }

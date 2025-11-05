@@ -318,8 +318,9 @@ function checkMission() {
         if (currentQuestElement) currentQuestElement.classList.add('completed');
         if (questCheckElement) questCheckElement.style.opacity = 1;
 
+        // ミッション達成時に花火を打ち上げる
+        launchFireworks();
 
-        
         // 達成後、指定時間待って次のミッションに移行
         setTimeout(moveToNextMission, TRANSITION_DELAY); 
     }
