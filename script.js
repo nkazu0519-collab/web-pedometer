@@ -169,56 +169,60 @@ function startCounting() {
     }
 
     isCounting = true;
-
-    // データ読み込みと日付リセットのロジック
+    
+    // --- 1. すべての保存データを取得 ---
     const today = getToday();
     const lastSaveDate = localStorage.getItem(STORAGE_KEY_DATE);
     const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
-    // ミッションインデックスの読み込み
     const savedMissionIndex = localStorage.getItem(STORAGE_KEY_MISSION_INDEX); 
     const savedConsecutiveDays = localStorage.getItem(STORAGE_KEY_CONSECUTIVE_DAYS);
-const savedWeeklySteps = localStorage.getItem(STORAGE_KEY_WEEKLY_STEPS);
-
-    // 日付チェック (歩数のみリセット)
+    const savedWeeklySteps = localStorage.getItem(STORAGE_KEY_WEEKLY_STEPS);
+    
+    // --- 2. データの初期化/読み込み（計算に必要な値をまず変数に入れる） ---
+    // 保存されていた歩数とボーナスミッションの状態を一時的にロード
+    let stepsToLoad = parseInt(savedSteps, 10) || 0;
+    let consecutiveDaysToLoad = parseInt(savedConsecutiveDays, 10) || 0;
+    let weeklyStepsToLoad = parseInt(savedWeeklySteps, 10) || 0;
+    
+    // --- 3. 日付チェックと連続記録の判定ロジック ---
     if (lastSaveDate !== today) {
+        // ★日付が変わった場合★
+        const targetStepsForConsecutive = 5000; 
+        const lastDaySteps = stepsToLoad; // 昨日までの歩数
+        
+        // 連続記録の判定ロジック（昨日分の達成をチェック）
+        if (lastDaySteps >= targetStepsForConsecutive) {
+            // 前日目標達成 → 連続記録を1日追加
+            consecutiveDays = consecutiveDaysToLoad + 1;
+        } else {
+            // 前日目標未達 → 連続記録をリセット
+            consecutiveDays = 0;
+        }
+        
+        // 当日の歩数は0からスタート
         steps = 0;
-        localStorage.setItem(STORAGE_KEY_DATE, today);
-
-    // 連続記録の判定とリセット
-    // 前日の歩数が目標を達成していなければ連続記録をリセット
-    const lastDaySteps = parseInt(localStorage.getItem(STORAGE_KEY_STEPS) || '0', 10);
-    const targetStepsForConsecutive = 5000; // 5000歩を連続達成の基準とする
-
-    if (lastDaySteps >= targetStepsForConsecutive) {
-        // 連続記録を1日追加
-        consecutiveDays = parseInt(savedConsecutiveDays || '0', 10) + 1;
-    } else {
-        // 目標未達のためリセット
-        consecutiveDays = 0;
+        localStorage.setItem(STORAGE_KEY_DATE, today); // 新しい日付を保存
+    } else { 
+        // ★日付が変わっていない場合★
+        // 保存データをそのまま引き継ぐ
+        steps = stepsToLoad;
+        consecutiveDays = consecutiveDaysToLoad;
+        weeklySteps = weeklyStepsToLoad;
     }
     
-    } else if (savedSteps !== null) {
-        steps = parseInt(savedSteps, 10) || 0;
-    }
-    
-    // ミッションインデックスの読み込み
+    // --- 4. ミッションインデックスの読み込み ---
+    // ミッションインデックスは日付が変わっても引き継ぐ
     if (savedMissionIndex !== null) {
         currentMissionIndex = parseInt(savedMissionIndex, 10) || 0;
     }
-    // ボーナス変数の読み込み
-    if (savedConsecutiveDays !== null) {
-        consecutiveDays = parseInt(savedConsecutiveDays, 10) || 0;
-    }
-    if (savedWeeklySteps !== null) {
-        weeklySteps = parseInt(savedWeeklySteps, 10) || 0;
-    }
-
+    
+    // --- 5. 画面と計測の準備 ---
     gravity = { x: 0, y: 0, z: 0 };
     lastStepTime = 0;
     stepCountElement.textContent = steps;
     
-    renderCurrentMission(); // 読み込んだミッションをレンダリング
-    renderBonusMissions(); // ボーナスミッションのレンダリング
+    renderCurrentMission(); 
+    renderBonusMissions(); 
 
     // iOSの許可を求めるためのコード（変更なし）
     if (typeof DeviceMotionEvent.requestPermission === 'function') {
