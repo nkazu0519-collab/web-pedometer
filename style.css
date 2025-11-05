@@ -77,9 +77,10 @@ h2 {
 
     display: flex;
     align-items: center;
-    justify-content: space-between;
     position: relative;
     overflow: hidden;
+    /* ボックス内の隙間を埋める */
+    gap: 15px;
 }
 
 /* --- アイコン＆テキスト --- */
@@ -87,6 +88,8 @@ h2 {
     display: flex;
     align-items: center;
     gap: 15px;
+    /* アイコンが縮まないようにする */
+    flex-shrink: 0;
 }
 
 .quest-icon {
@@ -98,6 +101,9 @@ h2 {
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
+    /* テキストが広がるスペースを確保し、折り返しを抑制 */
+    flex-grow: 1; /* 可能な限りスペースを占有 */
+    min-width: 0; /* Flexアイテムの最小幅を設定 */
 }
 
 /* チェックマーク（達成時） */
@@ -206,4 +212,21 @@ button {
         transform: scale(2.5);
         opacity: 0;
     }
+}
+
+#current-quest-container, 
+#bonus-quests-list {
+    margin-top: 5px; 
+    margin-bottom: 5px;
+    padding: 0;
+    list-style: none;
+    width: 90%; 
+    max-width: 400px;
+}
+
+/* メッセージエリアの上下の余白を強制的に排除 */
+#message {
+    margin-top: 0 !important;    
+    margin-bottom: 0 !important; 
+    height: 1.5rem; 
 }
