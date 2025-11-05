@@ -74,40 +74,40 @@ h2 {
    クエスト表示
 ================================ */
 
-/* 並べるため上層 UL を中央寄せ */
+/* クエストUL：中央配置 */
 #current-quest-container,
 #bonus-quests-list {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 0;
     list-style: none;
-    width: 90%;
-    max-width: 450px;
+    width: 100%;
     
     display: flex;
-    flex-direction: column;  /* ← 縦並び */
-    align-items: center;     /* ← 中央揃え */
+    flex-direction: column;
+    align-items: center;   /* ✅ 子要素を中央に */
 }
 
-/* --- クエスト枠 --- */
+/* クエストカード */
 .quest-item {
     background-color: var(--quest-green);
     color: white;
-    padding: 12px;          /* ←少し小さく */
-    margin-bottom: 8px;     /* ←余白縮小 */
+    
+    padding: 12px;
+    margin-bottom: 8px;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 
     display: flex;
     align-items: center;
-    position: relative;
-    overflow: hidden;
     gap: 10px;
 
-    width: 100%;
+    /* ✅ 横幅を固定最大にして中央へ */
     max-width: 450px;
-    margin: 0 auto; /* 自動で中央寄せ */
+    width: 90%;
+    margin: 0 auto;
 }
+
 
 /* 達成 */
 .quest-item.completed {
