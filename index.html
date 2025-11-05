@@ -1,55 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADVENTURE STEPS</title>
-
-    <!-- スマホブラウザのステータスバー色設定 -->
-    <meta name="theme-color" content="#98FF98">
-
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>歩数クエスト</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- 歩数達成時に表示される花火エフェクト -->
+    <h1 class="title">クエスト</h1>
+
+    <!-- ★ 現在のミッション -->
+    <ul id="current-quest-container"></ul>
+
+    <!-- ★ ボーナスクエスト -->
+    <h2 class="section-title">ボーナスクエスト</h2>
+    <ul id="bonus-quests-list"></ul>
+
+    <!-- 歩数表示 -->
+    <div class="step-display">
+        <span id="step-count">0</span> 歩
+    </div>
+
+    <!-- メッセージ表示（達成時） -->
+    <div id="message"></div>
+
+    <!-- 花火アニメーションコンテナ -->
     <div id="fireworks-container"></div>
 
-    <main>
+    <!-- 操作ボタン -->
+    <div class="button-area">
+        <button id="start-button">▶ 計測開始</button>
+        <button id="stop-button">■ 停止</button>
+        <button id="reset-button">↺ リセット</button>
+    </div>
 
-        <!-- タイトル -->
-        <h1>ADVENTURE STEPS</h1>
-
-        <!-- 現在の歩数を表示 -->
-        <p id="label-steps">今日の歩数:</p>
-        <p id="step-count-container">
-            <!-- screen readerに配慮 -->
-            <span id="step-count" aria-live="polite" aria-atomic="true">0</span>
-        </p>
-
-        <!-- 計測ボタン -->
-        <div id="button-container">
-            <button id="start-button" type="button">START</button>
-            <button id="stop-button" type="button">STOP</button>
-        </div>
-
-        <!-- 現在のクエスト表示 -->
-        <section id="current-quest-section">
-            <h2>クエスト</h2>
-            <div id="current-quest-container">読み込み中...</div>
-        </section>
-
-        <!-- 達成メッセージ -->
-        <p id="message" aria-live="polite"></p>
-
-        <!-- ボーナスクエスト一覧 -->
-        <section id="bonus-quests-section">
-            <ul id="bonus-quests-list"></ul>
-        </section>
-
-    </main>
-
-    <!-- JS読み込み -->
-    <script src="script.js" defer></script>
+<script src="script.js"></script>
 </body>
 </html>

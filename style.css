@@ -9,8 +9,10 @@
     --success-green: #28a745;
 }
 
+/* -------------------------------
+   全体
+-------------------------------- */
 body {
-    /* 背景色 & レイアウト */
     background-color: var(--bg-green);
     font-family: Arial, sans-serif;
     margin: 0;
@@ -23,55 +25,76 @@ body {
     text-align: center;
 }
 
+/* ===============================
+   タイトル
+================================ */
 h1 {
-    /* タイトル（可変サイズ） */
     color: var(--title-color);
     font-size: clamp(28px, 8vw, 64px);
-    margin-bottom: 3vh;
+    margin-bottom: 1vh;         /* ← 余白を控えめに */
 }
 
+/* 見出し */
 h2 {
-    /* 見出し */
     color: var(--title-color);
     font-size: clamp(20px, 6vw, 48px);
-    margin-top: 5vh;
-    margin-bottom: 3vh;
+    margin-top: 2vh;            /* ← 余白を縮小 */
+    margin-bottom: 1vh;         /* ← 余白を縮小 */
 }
 
 /* ===============================
    歩数表示エリア
-   =============================== */
+================================ */
 #step-count {
-    /* 特大サイズでわかりやすく */
     font-size: clamp(60px, 20vw, 140px);
     font-weight: 900;
     color: var(--step-blue);
     display: block;
-    margin: 2vh 0 4vh 0;
+    margin: 1vh 0 2vh 0;      /* ← 余白を縮小 */
 }
 
 #label-steps {
     font-size: clamp(16px, 4vw, 28px);
-    margin-bottom: 5px;
+    margin-bottom: 0;          /* ← 下余白を0 */
     color: #444;
 }
 
 /* ===============================
+   メッセージ
+================================ */
+#message {
+    font-size: clamp(18px, 5vw, 36px);
+    color: var(--success-green);
+    font-weight: bold;
+    height: 2rem;
+    margin: 0;
+}
+
+/* ===============================
    クエスト表示
-   =============================== */
-#quests-list {
+================================ */
+
+/* 並べるため上層 UL を中央寄せ */
+#current-quest-container,
+#bonus-quests-list {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 0;
+    list-style: none;
     width: 90%;
     max-width: 450px;
-    margin: 2vh auto;
-    padding: 0;
+    
+    display: flex;
+    flex-direction: column;  /* ← 縦並び */
+    align-items: center;     /* ← 中央揃え */
 }
 
 /* --- クエスト枠 --- */
 .quest-item {
     background-color: var(--quest-green);
     color: white;
-    padding: 15px;
-    margin-bottom: 15px;
+    padding: 12px;          /* ←少し小さく */
+    margin-bottom: 8px;     /* ←余白縮小 */
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 
@@ -79,48 +102,44 @@ h2 {
     align-items: center;
     position: relative;
     overflow: hidden;
-    /* ボックス内の隙間を埋める */
-    gap: 15px;
-    padding: 15px; /* ボックスの内側のスペース */
-    
-    /* 項目自体もFlexコンテナ */
-    display: flex;
-    align-items: center;
+    gap: 10px;
+    width: 100%;
 }
 
-/* --- アイコン＆テキスト --- */
+/* 達成 */
+.quest-item.completed {
+    background-color: #4CAF50;
+}
+
+/* アイコン & テキスト */
 .quest-content {
     display: flex;
     align-items: center;
-    gap: 15px;
-    /* アイコンが縮まないようにする */
-    flex-shrink: 0;
-    /* 意図しない折り返しを防ぐために、アイコン以外でスペースを占有させる */
+    gap: 12px;
     flex-grow: 1;
+    flex-shrink: 0;
 }
 
 .quest-icon {
-    font-size: 2.5rem;
+    font-size: 2.4rem;
 }
 
 .quest-text-bar {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
-    /* テキストが広がるスペースを確保し、折り返しを抑制 */
-    flex-grow: 1; /* 可能な限りスペースを占有 */
-    min-width: 0; /* Flexアイテムの最小幅を設定 */
+    gap: 4px;
+    flex-grow: 1;
+    min-width: 0;
 }
 
-/* チェックマーク（達成時） */
+/* チェックマーク */
 .quest-check {
     font-size: 2rem;
     color: #fff;
     opacity: 0;
     transition: opacity 0.3s;
 }
-
 .quest-item.completed .quest-check {
     opacity: 1;
 }
@@ -131,25 +150,24 @@ h2 {
     height: 6px;
     background-color: rgba(255,255,255,0.3);
     border-radius: 3px;
-    margin-top: 5px;
+    margin-top: 4px;
 }
-
 .progress-fill {
     height: 100%;
-    width: 0%; /* JSで操作 */
+    width: 0%;
     background-color: #f0fff0;
     border-radius: 3px;
     transition: width 0.3s ease;
 }
 
 /* ===============================
-   ボタン配置
-   =============================== */
+   ボタン
+================================ */
 #button-container {
     display: flex;
     justify-content: center;
     gap: 5vw;
-    margin-top: 5vh;
+    margin-top: 3vh;      /* ← ちょい縮小 */
 }
 
 button {
@@ -168,26 +186,14 @@ button {
     background-color: var(--start-green);
     color: white;
 }
-
 #stop-button {
     background-color: var(--stop-red);
     color: white;
 }
 
 /* ===============================
-   メッセージ表示（達成通知）
-   =============================== */
-#message {
-    font-size: clamp(18px, 5vw, 36px);
-    color: var(--success-green);
-    font-weight: bold;
-    height: 3vh;
-    margin-top: 4vh;
-}
-
-/* ===============================
-   花火演出用
-   =============================== */
+   花火演出
+================================ */
 #fireworks-container {
     position: fixed;
     top: 0;
@@ -205,7 +211,6 @@ button {
     border-radius: 50%;
 }
 
-/* 花火アニメーション */
 @keyframes explode {
     0% {
         transform: scale(0);
@@ -219,21 +224,4 @@ button {
         transform: scale(2.5);
         opacity: 0;
     }
-}
-
-#current-quest-container, 
-#bonus-quests-list {
-    margin-top: 5px; 
-    margin-bottom: 5px;
-    padding: 0;
-    list-style: none;
-    width: 90%; 
-    max-width: 400px;
-}
-
-/* メッセージエリアの上下の余白を強制的に排除 */
-#message {
-    margin-top: 0 !important;    
-    margin-bottom: 0 !important; 
-    height: 1.5rem; 
 }
