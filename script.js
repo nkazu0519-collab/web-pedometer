@@ -333,6 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 保存されていた歩数とミッションインデックスを読み込む
     const savedSteps = localStorage.getItem(STORAGE_KEY_STEPS);
     const savedMissionIndex = localStorage.getItem(STORAGE_KEY_MISSION_INDEX);
+    const savedConsecutiveDays = localStorage.getItem(STORAGE_KEY_CONSECUTIVE_DAYS);
+    const savedWeeklySteps = localStorage.getItem(STORAGE_KEY_WEEKLY_STEPS);
+
     if (savedSteps !== null) {
         steps = parseInt(savedSteps, 10) || 0;
         stepCountElement.textContent = steps;
@@ -340,5 +343,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedMissionIndex !== null) {
         currentMissionIndex = parseInt(savedMissionIndex, 10) || 0;
     }
+
+    // ボーナス変数の初期化
+    if (savedConsecutiveDays !== null) {
+        consecutiveDays = parseInt(savedConsecutiveDays, 10) || 0;
+    }
+    if (savedWeeklySteps !== null) {
+        weeklySteps = parseInt(savedWeeklySteps, 10) || 0;
+    }
+
     renderCurrentMission(); // 最後に保存したミッションを表示
+    // ページロード時にボーナスミッションを表示★
+    renderBonusMissions();
 });

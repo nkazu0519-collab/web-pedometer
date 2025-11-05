@@ -173,3 +173,24 @@ button {
     margin-bottom: 5px; 
     color: #444;
 }
+
+/* ul要素のデフォルトスタイルをリセット */
+#current-quest-container, 
+#bonus-quests-list {
+    padding: 0;           /* 左側の余白（箇条書きのスペース）を削除 */
+    margin: 10px auto;    /* 上下に少しだけマージンを取り、中央寄せ */
+    list-style: none;     /* 箇条書きの黒い点（・）を削除 */
+    width: 90%;           /* 幅を制限 */
+    max-width: 400px;     /* 最大幅を設定 */
+}
+
+/* メッセージとボタンコンテナ周辺の調整 */
+#message {
+    margin: 15px auto;    /* メッセージの上下スペースを調整 */
+    text-align: center;
+}
+
+/* 各ミッションアイテム間の間隔を調整 */
+.quest-item {
+    margin-bottom: 15px;  /* リストアイテムの下側に適度な間隔を空ける */
+}
