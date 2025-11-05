@@ -1,32 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ADVENTURE STEPS</title>
-<link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TODAY'S STEPS</title>
+    
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <!-- 花火アニメーションコンテナ -->
+    <div id="fireworks-container"></div>
 
-    <h1 class="title">デイリークエスト</h1>
-
-    <!-- 現在のミッション -->
-    <ul id="current-quest-container"></ul>
-
-    <!-- チャレンジクエスト -->
-    <h2 class="section-title">チャレンジクエスト</h2>
-    <ul id="bonus-quests-list"></ul>
+    <h1 class="title">TODAY'S STEPS</h1>
 
     <!-- 歩数表示 -->
     <div class="step-display">
-        <span id="step-count">0</span> STEPS
+        <span id="step-count">0</span>
     </div>
-
-    <!-- メッセージ表示（達成時） -->
-    <div id="message"></div>
-
-    <!-- 花火アニメーションコンテナ -->
-    <div id="fireworks-container"></div>
 
     <!-- 操作ボタン -->
     <div class="button-area">
@@ -35,6 +25,17 @@
         <!-- <button id="reset-button">↺ リセット</button> -->
     </div>
 
-<script src="script.js"></script>
+    <!-- 現在のミッション -->
+    <ul id="current-quest-container"></ul>
+
+    <!-- チャレンジクエスト -->
+    <h2 class="section-title">チャレンジクエスト</h2>
+    <ul id="bonus-quests-list"></ul>
+
+    <!-- メッセージ表示（達成時） -->
+    <div id="message"></div>
+
+
+    <script src="script.js"></script>
 </body>
 </html>
