@@ -11,15 +11,6 @@ body {
     justify-content: flex-start;
     text-align: center;
 }
-/* リセット機能関連*/
-main {
-    width: 100%;
-    /* min-heightはbodyで持っているため不要 */
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* 左右中央寄せ */
-    /* mainの子要素間の間隔を調整したい場合はここにgapやmarginを設定 */
-}
 
 h1 {
     /* ADVENTURE STEPS */
@@ -101,11 +92,6 @@ h2 {
     gap: 5px;
 }
 
-#quest-description {
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
 /* --- 達成チェックマーク --- */
 .quest-check {
     font-size: 2rem;
@@ -166,10 +152,6 @@ button {
     color: white;
 }
 
-#reset-button {
-    background-color: #6c757d; /* ニュートラルなグレー */
-    color: white;
-}
 /* --- メッセージエリア（「やったね！クエスト達成！」） --- */
 #message {
     font-size: 5vw; /* メッセージを大きく目立たせる */
