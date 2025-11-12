@@ -122,43 +122,48 @@ function saveState() {
 }
 
 /** 起動時に localStorage から状態を読み込む（必要な初期化もここで） */
+/** 起動時に localStorage から状態を読み込む（必要な初期化もここで） */
 function loadStateOnStart() {
-  const savedSteps = parseInt(localStorage.getItem(KEYS.STEPS), 10);
-  const savedDate = localStorage.getItem(KEYS.DATE);
-  const savedMissionIndex = parseInt(localStorage.getItem(KEYS.MISSION_INDEX), 10);
-  const savedConsecutive = parseInt(localStorage.getItem(KEYS.CONSECUTIVE), 10);
-  const savedWeekly = parseInt(localStorage.getItem(KEYS.WEEKLY_STEPS), 10);
-  const savedWeekNo = localStorage.getItem(KEYS.WEEK_NUMBER);
-  const today = getTodayISO();
-  const thisWeek = getYearWeek();
+    const savedSteps = parseInt(localStorage.getItem(KEYS.STEPS), 10);
+    const savedDate = localStorage.getItem(KEYS.DATE);
+    const savedMissionIndex = parseInt(localStorage.getItem(KEYS.MISSION_INDEX), 10);
+    const savedConsecutive = parseInt(localStorage.getItem(KEYS.CONSECUTIVE), 10);
+    const savedWeekly = parseInt(localStorage.getItem(KEYS.WEEKLY_STEPS), 10);
+    const savedWeekNo = localStorage.getItem(KEYS.WEEK_NUMBER);
+    const today = getTodayISO();
+    const thisWeek = getYearWeek();
 
-  // 週間リセット：週番号が変わっていたら weeklySteps を 0 にする
-  if (savedWeekNo && savedWeekNo !== thisWeek) {
-    state.weeklySteps = 0;
-  } else {
-    state.weeklySteps = Number.isFinite(savedWeekly) ? savedWeekly : 0;
-  }
-
-  // 日付が変わっていた場合は日次リセット（steps を 0 スタート）して連続判定を評価
-  if (savedDate && savedDate !== today) {
-    const yesterdaySteps = Number.isFinite(savedSteps) ? savedSteps : 0;
-    // 前日が目標（DEFAULT_CONSECUTIVE_TARGET）を満たしていれば consecutiveDays++、そうでなければリセット
-    if (yesterdaySteps >= CONFIG.DEFAULT_CONSECUTIVE_TARGET) {
-      state.consecutiveDays = (Number.isFinite(savedConsecutive) ? savedConsecutive : 0) + 1;
+    // 週間リセット：週番号が変わっていたら weeklySteps を 0 にする
+    if (savedWeekNo && savedWeekNo !== thisWeek) {
+        state.weeklySteps = 0;
     } else {
-      state.consecutiveDays = 0;
+        state.weeklySteps = Number.isFinite(savedWeekly) ? savedWeekly : 0;
     }
-    state.steps = 0;
-    // 日付を新しく保存（次回チェック用）
-    localStorage.setItem(KEYS.DATE, today);
-  } else {
-    // 同じ日なら保存された歩数を復元
-    state.steps = Number.isFinite(savedSteps) ? savedSteps : 0;
-    state.consecutiveDays = Number.isFinite(savedConsecutive) ? savedConsecutive : 0;
-  }
 
-  // ミッションインデックスを復元（存在すれば）
-  state.missionIndex = Number.isFinite(savedMissionIndex) ? savedMissionIndex : 0;
+    // 日付が変わっていた場合は日次リセットと連続判定の評価
+    if (savedDate && savedDate !== today) {
+        const yesterdaySteps = Number.isFinite(savedSteps) ? savedSteps : 0;
+        
+        // 連続記録の計算
+        if (yesterdaySteps >= CONFIG.DEFAULT_CONSECUTIVE_TARGET) {
+            state.consecutiveDays = (Number.isFinite(savedConsecutive) ? savedConsecutive : 0) + 1;
+        } else {
+            state.consecutiveDays = 0;
+        }
+        
+        // ★修正点★ 歩数とミッションインデックスをリセット
+        state.steps = 0;
+        state.missionIndex = 0; // デイリークエストを最初のミッションに戻す
+        
+        // 日付を新しく保存（次回チェック用）
+        localStorage.setItem(KEYS.DATE, today);
+    } else {
+        // 同じ日なら保存された歩数とインデックスを復元
+        state.steps = Number.isFinite(savedSteps) ? savedSteps : 0;
+        state.consecutiveDays = Number.isFinite(savedConsecutive) ? savedConsecutive : 0;
+        // ミッションインデックスを復元（存在すれば）
+        state.missionIndex = Number.isFinite(savedMissionIndex) ? savedMissionIndex : 0;
+    }
 }
 
 /* ---------------------------
