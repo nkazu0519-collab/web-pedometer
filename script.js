@@ -12,8 +12,8 @@ const CONFIG = {
   TRANSITION_DELAY: 1500,
   // 花火数（負荷を見て調整）
   FIREWORK_COUNT: 12,
-  // デフォルト連続判定対象の前日目標（例: 5000）
-  DEFAULT_CONSECUTIVE_TARGET: 5000,
+  // デフォルト連続判定対象の前日目標（例: 100）
+  DEFAULT_CONSECUTIVE_TARGET: 100,
 };
 
 /* ---------------------------
@@ -72,7 +72,7 @@ const MISSIONS = [
    ボーナスクエスト定義
    --------------------------- */
 const BONUS_MISSIONS = [
-  { id: 101, type: 'consecutive', goal: 5, targetSteps: 5000, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
+  { id: 101, type: 'consecutive', goal: 5, targetSteps: 100, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
   { id: 102, type: 'weekly', goal: 35000, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
 ];
 
