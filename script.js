@@ -3,9 +3,10 @@
    --------------------------- */
 const CONFIG = {
   // 歩数判定: 大きいほどカウントしにくい（デバイス差あり）
-  THRESHOLD: 10.0,
+  THRESHOLD: 4.0,
   // 人間の歩行では300〜700ms程度。小さめにすると誤検出が増える
-  STEP_INTERVAL: 400,
+  STEP_INTERVAL: 500
+  ,
   // ローパスフィルタ（重力抽出）の係数（0〜1）
   ALPHA: 0.9,
   // ミッション切り替え時の演出待ち(ms)
@@ -50,7 +51,7 @@ const $ = {
   stepCount: document.getElementById('step-count'),
   startBtn: document.getElementById('start-button'),
   stopBtn: document.getElementById('stop-button'),
-  // resetBtn: document.getElementById('reset-button'), リセットボタン//
+  resetBtn: document.getElementById('reset-button'),
   currentQuestContainer: document.getElementById('current-quest-container'),
   bonusQuestList: document.getElementById('bonus-quests-list'),
   message: document.getElementById('message'),
@@ -88,13 +89,30 @@ function getTodayISO() {
 /** 年・週番号を返す（ISO 週番号の簡易版） */
 function getYearWeek() {
   const d = new Date();
-  // 木曜日を含む週をその年の1週目とするISO週の近似
-  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = tmp.getUTCDay() || 7;
-  tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
-  return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+  const year = d.getFullYear();
+
+// 週の基準となる日付を作成 (UTC)
+    const yearStart = new Date(Date.UTC(year, 0, 1));
+    
+    // 経過日数
+    const days = Math.floor((d - yearStart) / (24 * 60 * 60 * 1000));
+    
+    // 簡易的な週番号（月曜日を週の始まりとするロジックに近づける）
+    // 0:日, 1:月, 2:火, ...
+    let dayOfWeek = d.getDay();
+    if (dayOfWeek === 0) { // 日曜日を7とする
+        dayOfWeek = 7;
+    }
+
+    // 今週の月曜日に戻るために何日引くか
+    const daysSinceMonday = dayOfWeek - 1; 
+
+    // 基準日からの通算日数を週番号に変換 (簡易版)
+    // ここでは、日付が変われば確実に別の週番号になるように、現在のISO週番号の計算ロジックをシンプルにします。
+    const weekNo = Math.floor((days + 7) / 7);
+
+    // 週番号が年をまたぐ場合の処理は複雑なため、ここでは年と通算週番号を組み合わせます。
+    return `${year}-W${String(weekNo).padStart(2, '0')}`;
 }
 
 /* ---------------------------
@@ -122,43 +140,48 @@ function saveState() {
 }
 
 /** 起動時に localStorage から状態を読み込む（必要な初期化もここで） */
+/** 起動時に localStorage から状態を読み込む（必要な初期化もここで） */
 function loadStateOnStart() {
-  const savedSteps = parseInt(localStorage.getItem(KEYS.STEPS), 10);
-  const savedDate = localStorage.getItem(KEYS.DATE);
-  const savedMissionIndex = parseInt(localStorage.getItem(KEYS.MISSION_INDEX), 10);
-  const savedConsecutive = parseInt(localStorage.getItem(KEYS.CONSECUTIVE), 10);
-  const savedWeekly = parseInt(localStorage.getItem(KEYS.WEEKLY_STEPS), 10);
-  const savedWeekNo = localStorage.getItem(KEYS.WEEK_NUMBER);
-  const today = getTodayISO();
-  const thisWeek = getYearWeek();
+    const savedSteps = parseInt(localStorage.getItem(KEYS.STEPS), 10);
+    const savedDate = localStorage.getItem(KEYS.DATE);
+    const savedMissionIndex = parseInt(localStorage.getItem(KEYS.MISSION_INDEX), 10);
+    const savedConsecutive = parseInt(localStorage.getItem(KEYS.CONSECUTIVE), 10);
+    const savedWeekly = parseInt(localStorage.getItem(KEYS.WEEKLY_STEPS), 10);
+    const savedWeekNo = localStorage.getItem(KEYS.WEEK_NUMBER);
+    const today = getTodayISO();
+    const thisWeek = getYearWeek();
 
-  // 週間リセット：週番号が変わっていたら weeklySteps を 0 にする
-  if (savedWeekNo && savedWeekNo !== thisWeek) {
-    state.weeklySteps = 0;
-  } else {
-    state.weeklySteps = Number.isFinite(savedWeekly) ? savedWeekly : 0;
-  }
-
-  // 日付が変わっていた場合は日次リセット（steps を 0 スタート）して連続判定を評価
-  if (savedDate && savedDate !== today) {
-    const yesterdaySteps = Number.isFinite(savedSteps) ? savedSteps : 0;
-    // 前日が目標（DEFAULT_CONSECUTIVE_TARGET）を満たしていれば consecutiveDays++、そうでなければリセット
-    if (yesterdaySteps >= CONFIG.DEFAULT_CONSECUTIVE_TARGET) {
-      state.consecutiveDays = (Number.isFinite(savedConsecutive) ? savedConsecutive : 0) + 1;
+    // 週間リセット：週番号が変わっていたら weeklySteps を 0 にする
+    if (savedWeekNo && savedWeekNo !== thisWeek) {
+        state.weeklySteps = 0;
     } else {
-      state.consecutiveDays = 0;
+        state.weeklySteps = Number.isFinite(savedWeekly) ? savedWeekly : 0;
     }
-    state.steps = 0;
-    // 日付を新しく保存（次回チェック用）
-    localStorage.setItem(KEYS.DATE, today);
-  } else {
-    // 同じ日なら保存された歩数を復元
-    state.steps = Number.isFinite(savedSteps) ? savedSteps : 0;
-    state.consecutiveDays = Number.isFinite(savedConsecutive) ? savedConsecutive : 0;
-  }
 
-  // ミッションインデックスを復元（存在すれば）
-  state.missionIndex = Number.isFinite(savedMissionIndex) ? savedMissionIndex : 0;
+    // 日付が変わっていた場合は日次リセットと連続判定の評価
+    if (savedDate && savedDate !== today) {
+        const yesterdaySteps = Number.isFinite(savedSteps) ? savedSteps : 0;
+        
+        // 連続記録の計算
+        if (yesterdaySteps >= CONFIG.DEFAULT_CONSECUTIVE_TARGET) {
+            state.consecutiveDays = (Number.isFinite(savedConsecutive) ? savedConsecutive : 0) + 1;
+        } else {
+            state.consecutiveDays = 0;
+        }
+        
+        // 歩数とミッションインデックスをリセット
+        state.steps = 0;
+        state.missionIndex = 0; // デイリークエストを最初のミッションに戻す
+        
+        // 日付を新しく保存（次回チェック用）
+        localStorage.setItem(KEYS.DATE, today);
+    } else {
+        // 同じ日なら保存された歩数とインデックスを復元
+        state.steps = Number.isFinite(savedSteps) ? savedSteps : 0;
+        state.consecutiveDays = Number.isFinite(savedConsecutive) ? savedConsecutive : 0;
+        // ミッションインデックスを復元（存在すれば）
+        state.missionIndex = Number.isFinite(savedMissionIndex) ? savedMissionIndex : 0;
+    }
 }
 
 /* ---------------------------
@@ -444,7 +467,7 @@ function unregisterMotionListener() {
    - カウント中なら停止
    - ストレージも更新
    --------------------------- */
-/* function resetAll() {
+function resetAll() {
   if (state.isCounting) stopCounting();
 
   state.steps = 0;
@@ -468,7 +491,7 @@ function unregisterMotionListener() {
   renderCurrentMission();
   renderBonusMissions();
   saveState();
-} */
+}
 
 /* ---------------------------
    visibility / pagehide 対策
@@ -488,7 +511,7 @@ window.addEventListener('pagehide', saveState);
 const FIREWORK_COLORS = ['#FF4500', '#FFD700', '#ADFF2F', '#1E90FF', '#FF69B4'];
 
 function launchFireworks() {
-  const container = $.fireworksContainer;
+  const container = document.getElementById('fireworks-container');
   if (!container) return;
 
   const count = CONFIG.FIREWORK_COUNT;
@@ -497,7 +520,7 @@ function launchFireworks() {
     part.className = 'firework';
 
     const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
-    const size = Math.random() * 6 + 4; // px
+    const size = Math.random() * 7 + 8; // px
     const x = Math.random() * window.innerWidth;
     const y = window.innerHeight * (0.3 + Math.random() * 0.4); // 中央付近
 
@@ -507,16 +530,16 @@ function launchFireworks() {
     part.style.left = `${x}px`;
     part.style.top = `${y}px`;
 
-    const duration = Math.random() * 1.5 + 0.6;
+    const duration = Math.random() * 2.0 + 2.0;
     part.style.animation = `explode ${duration}s ease-out forwards`;
-    part.style.animationDelay = `${Math.random() * 0.2}s`;
+    part.style.animationDelay = `${Math.random() * 1.0}s`;
 
     container.appendChild(part);
 
     // 演出後に削除
     setTimeout(() => {
       part.remove();
-    }, (duration + 0.3) * 1000);
+    }, (duration + 1.0) * 1000);
   }
 }
 
@@ -534,7 +557,7 @@ function initApp() {
   // ボタンイベント
   $.startBtn && $.startBtn.addEventListener('click', startCounting);
   $.stopBtn && $.stopBtn.addEventListener('click', stopCounting);
-  // $.resetBtn && $.resetBtn.addEventListener('click', resetAll); リセットボタン//
+  $.resetBtn && $.resetBtn.addEventListener('click', resetAll);
 
   // ページ離脱時に保存（補助）
   window.addEventListener('beforeunload', saveState);
