@@ -409,6 +409,8 @@ function startCounting() {
 
   state.isCounting = true;
 
+  enableNoSleep();
+
   // 初期読み込み（ローカルデータの反映）
   loadStateOnStart();
   $.stepCount && ($.stepCount.textContent = state.steps);
@@ -442,6 +444,9 @@ function stopCounting() {
   state.isCounting = false;
   unregisterMotionListener();
   saveState();
+
+  disableNoSleep();
+
   console.log('計測停止');
 }
 
@@ -566,4 +571,53 @@ function initApp() {
 /* ---------------------------
    App 起動
    --------------------------- */
+
+/* ---------------------------
+   スリープ防止機能 (Wake Lock & Video Hack)
+   --------------------------- */
+let wakeLock = null;
+let noSleepVideo = null;
+
+// スリープ防止を有効にする
+async function enableNoSleep() {
+  // 1. Wake Lock API (Android/PC向け)
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('Wake Lock is active');
+    } catch (err) {
+      console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
+    }
+  }
+
+  // 2. Video Hack (iOS向けバックアップ)
+  // 画面上に表示されない小さな動画を作成してループ再生する
+  if (!noSleepVideo) {
+    noSleepVideo = document.createElement('video');
+    noSleepVideo.setAttribute('playsinline', '');
+    noSleepVideo.setAttribute('no-fullscreen', '');
+    noSleepVideo.setAttribute('loop', '');
+    noSleepVideo.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMQAAAAhmcmVlAAACQ21kYXQAAAGzABAHAAABthADAQAAAAZefX/AAAAC521vb3YAAABsbXZoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIGdHJhawAAAFx0a2hkAAAAAXwlsIB8JbCAAAAAAQAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAEAAAABAAAAAAAAAAAQAAbWRpYQAAACBtZGhkAAAAAHwlsIB8JbCAAAPoAAAAAAAAB5gAAAAAIGhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAAB2aWRlAAAAAAAAAAAAAVxtaW5mAAAAFHZtaGQAAAAAAAACAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAEcc3RibAAAALhzdHNkAAAAAAAAAAEAAACobXA0dgAAAAAAAAABAAAAAQAAAAEAFgAAAAAD6AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAG2VzZHMAAAAAA4CAgB8AAAAEgICAFEAvQAAAAAAAAAAAAAAANu4AABHjAACRxAAAAAAAFWF2Y0MBAAAAAAAAAAAAAAACAAOAggA4AAAAIAAAAAEAAAAAAAAAAAAAABRzdHRzAAAAAAAAAAEAAAAeAAAABHN0c2MAAAAAAAAAAQAAAAEAAAABAAAAFHN0c3oAAAAAAAAAEwAAAB4AAAAUc3RjbwAAAAAAAAABAAAALAAAAGB1ZHRhAAAAWGBteXQAAAAA1c3R5Mjg5NQAAbmV0d29yayBvZiBxdWFsaXR5IC0gd3d3Lm1ha2V5b3VlZnMub3JnIC0gY3JlYXRlZCBieSBiYWJlbCB4MjY0AA==';
+    noSleepVideo.style.display = 'none'; // 見えないようにする
+    document.body.appendChild(noSleepVideo);
+  }
+  noSleepVideo.play().catch(console.error);
+}
+
+// スリープ防止を解除する
+function disableNoSleep() {
+  // Wake Lock 解除
+  if (wakeLock !== null) {
+    wakeLock.release().then(() => {
+      wakeLock = null;
+      console.log('Wake Lock released');
+    });
+  }
+
+  // Video 停止
+  if (noSleepVideo) {
+    noSleepVideo.pause();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', initApp);
