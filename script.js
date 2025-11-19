@@ -75,6 +75,15 @@ const MISSIONS = [
 const BONUS_MISSIONS = [
   { id: 101, type: 'consecutive', goal: 5, targetSteps: 100, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
   { id: 102, type: 'weekly', goal: 35000, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
+  // シークレットミッション (unlockAt: 35000 が解放条件)
+  { 
+    id: 103, 
+    type: 'weekly', 
+    goal: 50000, 
+    text: '【シークレット】神の領域: 週間50,000歩', 
+    icon: '👑',
+    unlockAt: 35000 // 週間歩数が35,000を超えたら表示する設定
+  },
 ];
 
 /* ---------------------------
@@ -255,15 +264,28 @@ function renderCurrentMission() {
 /** ボーナスクエスト一覧を描画 */
 function renderBonusMissions() {
   $.bonusQuestList.innerHTML = '';
+  
   BONUS_MISSIONS.forEach((m) => {
-    const li = document.createElement('li');
-    const progressText = m.type === 'consecutive'
-      ? `${state.consecutiveDays}/${m.goal} 日連続`
-      : `${state.weeklySteps.toLocaleString()}/${m.goal.toLocaleString()} 歩`;
+    // ★追加★ シークレット判定ロジック
+    // もし「unlockAt」が設定されていて、週間歩数がそれに達していなければ、このミッションは表示しない（スキップ）
+    if (m.unlockAt && state.weeklySteps < m.unlockAt) {
+      return;
+    }
 
-    const isCompleted = (m.type === 'consecutive') ? (state.consecutiveDays >= m.goal) : (state.weeklySteps >= m.goal);
+    const li = document.createElement('li');
+    let progressText = '';
+    let isCompleted = false;
+
+    if (m.type === 'consecutive') {
+        progressText = `${state.consecutiveDays}/${m.goal} 日連続`;
+        isCompleted = state.consecutiveDays >= m.goal;
+    } else if (m.type === 'weekly') {
+        progressText = `${state.weeklySteps.toLocaleString()}/${m.goal.toLocaleString()} 歩`;
+        isCompleted = state.weeklySteps >= m.goal;
+    }
 
     li.id = `bonus-quest-${m.id}`;
+    // シークレットミッションの場合は特別なクラスをつけても面白い（今回は標準のまま）
     li.className = `quest-item ${isCompleted ? 'completed' : ''}`;
 
     li.innerHTML = `
@@ -276,7 +298,6 @@ function renderBonusMissions() {
       </div>
       <span class="quest-check" style="opacity:${isCompleted ? 1 : 0}">✅</span>
     `;
-
     $.bonusQuestList.appendChild(li);
   });
 }
