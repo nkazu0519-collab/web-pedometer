@@ -319,34 +319,54 @@ function updateProgress() {
 }
 
 /* ---------------------------
-   ミッション完了処理ガード付き
+   ミッション完了処理ガード付き (デイリー/ボーナス対応)
    --------------------------- */
-function onMissionAchieved() {
+function onMissionAchieved(achievedMission) { // ★引数：達成したミッション情報を受け取る
   if (state.missionCompletedLock) return; // 二重発火防止
   state.missionCompletedLock = true;
 
   // UI 更新（チェック表示・クラス追加）
-  const currentLi = document.getElementById('current-quest') || $.currentQuestContainer.querySelector('.quest-item');
-  const check = document.getElementById('quest-check');
+  // デイリーミッションの場合
+  if (achievedMission.id < 100) { // IDが100未満ならデイリーミッションと判断
+    const currentLi = document.getElementById('current-quest') || $.currentQuestContainer.querySelector('.quest-item');
+    const check = document.getElementById('quest-check');
+    if (currentLi) currentLi.classList.add('completed');
+    if (check) check.style.opacity = 1;
 
-  if (currentLi) currentLi.classList.add('completed');
-  if (check) check.style.opacity = 1;
+    $.message.textContent = `🎉 クエスト達成: ${achievedMission.text}！`;
+    launchFireworks(); // 通常の花火
+    
+    // 次のデイリーミッションへ（ロック解除は moveToNextMission 内で行う）
+    setTimeout(() => {
+      moveToNextMission();
+      state.missionCompletedLock = false;
+    }, CONFIG.TRANSITION_DELAY);
 
-  // 花火演出
-  launchFireworks();
+  } else { // ボーナスミッションの場合
+    const bonusLi = document.getElementById(`bonus-quest-${achievedMission.id}`);
+    const bonusCheck = bonusLi ? bonusLi.querySelector('.quest-check') : null;
 
-  // メッセージ表示
-  const mission = MISSIONS[state.missionIndex];
-  if (mission) $.message.textContent = `🎉 クエスト達成: ${mission.text}！`;
+    if (bonusLi) bonusLi.classList.add('completed');
+    if (bonusCheck) bonusCheck.style.opacity = 1;
 
-  // 保存してから遷移
-  saveState();
+    // ★神の領域ミッションの場合の特別な演出★
+    if (achievedMission.id === 103) { // id: 103 は「神の領域」
+      $.message.textContent = `👑 【神の領域到達】${achievedMission.text}！おめでとうございます！ 👑`;
+      launchFireworks(true); // ★引数 true で豪華版花火をリクエスト
+      launchFlowerShower(); // ★花吹雪を呼び出す
+    } else {
+      $.message.textContent = `🎉 ボーナスクエスト達成: ${achievedMission.text}！`;
+      launchFireworks(); // 通常の花火
+    }
+    
+    saveState(); // ボーナスの達成も保存
 
-  // 一定時間後に次ミッションへ（ロック解除は moveToNextMission 内で行う）
-  setTimeout(() => {
-    moveToNextMission();
-    state.missionCompletedLock = false;
-  }, CONFIG.TRANSITION_DELAY);
+    // ボーナスミッションは自動遷移がないため、一定時間後にメッセージをクリアしロックを解除
+    setTimeout(() => {
+      $.message.textContent = ''; // メッセージをクリア
+      state.missionCompletedLock = false;
+    }, CONFIG.TRANSITION_DELAY * 1.5); // 少し長めにメッセージを表示
+  }
 }
 
 /* ---------------------------
@@ -371,49 +391,64 @@ function moveToNextMission() {
    - Z軸（上下）に少し重みを付けることで誤検出を減らす
    --------------------------- */
 function handleMotion(event) {
-  // accelerationIncludingGravity がない場合は終了
-  const a = event.accelerationIncludingGravity;
-  if (!a) return;
+    const a = event.accelerationIncludingGravity;
+    if (!a) return;
 
-  // 重力分離（LPF）
-  state.gravity.x = CONFIG.ALPHA * state.gravity.x + (1 - CONFIG.ALPHA) * a.x;
-  state.gravity.y = CONFIG.ALPHA * state.gravity.y + (1 - CONFIG.ALPHA) * a.y;
-  state.gravity.z = CONFIG.ALPHA * state.gravity.z + (1 - CONFIG.ALPHA) * a.z;
+    state.gravity.x = CONFIG.ALPHA * state.gravity.x + (1 - CONFIG.ALPHA) * a.x;
+    state.gravity.y = CONFIG.ALPHA * state.gravity.y + (1 - CONFIG.ALPHA) * a.y;
+    state.gravity.z = CONFIG.ALPHA * state.gravity.z + (1 - CONFIG.ALPHA) * a.z;
 
-  // 重力除去（線形加速度）
-  const lin = {
-    x: a.x - state.gravity.x,
-    y: a.y - state.gravity.y,
-    z: a.z - state.gravity.z,
-  };
+    const lin = {
+        x: a.x - state.gravity.x,
+        y: a.y - state.gravity.y,
+        z: a.z - state.gravity.z,
+    };
 
-  // Z に少し重みを付与（上下揺れを重視）
-  const weightedMagnitude = Math.sqrt(
-    lin.x * lin.x + lin.y * lin.y + (lin.z * 1.2) * (lin.z * 1.2)
-  );
+    const weightedMagnitude = Math.sqrt(
+        lin.x * lin.x + lin.y * lin.y + (lin.z * 1.2) * (lin.z * 1.2)
+    );
 
-  const now = Date.now();
-  if (weightedMagnitude > CONFIG.THRESHOLD && now - state.lastStepTime > CONFIG.STEP_INTERVAL) {
-    // 歩数カウント
-    state.steps++;
-    state.lastStepTime = now;
+    const now = Date.now();
+    if (weightedMagnitude > CONFIG.THRESHOLD && now - state.lastStepTime > CONFIG.STEP_INTERVAL) {
+        state.steps++;
+        state.lastStepTime = now;
 
-    // 画面更新（数値）
-    if ($.stepCount) $.stepCount.textContent = state.steps;
+        if ($.stepCount) $.stepCount.textContent = state.steps;
+        state.weeklySteps++;
 
-    // 週間合計に加算（週別管理は loadStateOnStart で実施）
-    state.weeklySteps++;
+        updateProgress();
+        renderBonusMissions(); // ボーナスの表示も更新
 
-    // 進捗更新とミッションチェック
-    updateProgress();
-    renderBonusMissions();
+        // ★デイリーミッション達成判定★
+        const currentDailyMission = MISSIONS[state.missionIndex];
+        if (currentDailyMission && state.steps >= currentDailyMission.goal) {
+            onMissionAchieved(currentDailyMission); // デイリーミッション達成
+        }
 
-    // ミッション達成判定
-    const mission = MISSIONS[state.missionIndex];
-    if (mission && state.steps >= mission.goal) {
-      onMissionAchieved();
+        // ★ボーナスミッション達成判定★
+        BONUS_MISSIONS.forEach(bonusMission => {
+            // シークレットミッションでまだアンロックされていないものは判定しない
+            if (bonusMission.unlockAt && state.weeklySteps < bonusMission.unlockAt) {
+                return;
+            }
+            
+            let isAlreadyCompleted = false;
+            // 既に完了しているかどうかの判定 (ストレージから状態を読み取るか、一度レンダリングして状態を持つ必要があるが、
+            // ここでは簡易的に現在のUIの状態を見るか、stateから直接判定)
+            const bonusLi = document.getElementById(`bonus-quest-${bonusMission.id}`);
+            if (bonusLi && bonusLi.classList.contains('completed')) {
+                 isAlreadyCompleted = true;
+            }
+
+            if (!isAlreadyCompleted) { // まだ達成済みでない場合にのみチェック
+                if (bonusMission.type === 'consecutive' && state.consecutiveDays >= bonusMission.goal) {
+                    onMissionAchieved(bonusMission);
+                } else if (bonusMission.type === 'weekly' && state.weeklySteps >= bonusMission.goal) {
+                    onMissionAchieved(bonusMission);
+                }
+            }
+        });
     }
-  }
 }
 
 /* ---------------------------
@@ -532,41 +567,82 @@ window.addEventListener('visibilitychange', handleVisibilityChange);
 window.addEventListener('pagehide', saveState);
 
 /* ---------------------------
-   花火（軽量アニメ） - 負荷に注意
+   花火（軽量アニメ） - 負荷に注意 (豪華版対応)
    --------------------------- */
-const FIREWORK_COLORS = ['#FF4500', '#FFD700', '#ADFF2F', '#1E90FF', '#FF69B4'];
+const FIREWORK_COLORS = ['#FF4500', '#FFD700', '#ADFF2F', '#1E90FF', '#FF69B4', '#FFC0CB', '#FFFF00', '#00FFFF']; // 色を少し追加
 
-function launchFireworks() {
+function launchFireworks(isDeluxe = false) { // ★引数 isDeluxe を追加（デフォルトは false）
   const container = document.getElementById('fireworks-container');
   if (!container) return;
 
-  const count = CONFIG.FIREWORK_COUNT;
+  const count = isDeluxe ? CONFIG.FIREWORK_COUNT * 2 : CONFIG.FIREWORK_COUNT; // ★豪華版は2倍の数
+  const minSize = isDeluxe ? 10 : 7; // ★豪華版は少し大きめ
+  const maxSize = isDeluxe ? 20 : 12; // ★豪華版は少し大きめ
+  const minDuration = isDeluxe ? 2.5 : 2.0;
+  const maxDuration = isDeluxe ? 3.5 : 3.0;
+  const minDelay = isDeluxe ? 0 : 0.5;
+  const maxDelay = isDeluxe ? 1.5 : 2.0;
+
+
   for (let i = 0; i < count; i++) {
     const part = document.createElement('div');
     part.className = 'firework';
 
     const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
-    const size = Math.random() * 7 + 8; // px
+    const size = Math.random() * (maxSize - minSize) + minSize; // px
     const x = Math.random() * window.innerWidth;
-    const y = window.innerHeight * (0.3 + Math.random() * 0.4); // 中央付近
+    const y = window.innerHeight * (0.2 + Math.random() * 0.6); // 豪華版は少し広範囲に
 
     part.style.backgroundColor = color;
+    part.style.boxShadow = `0 0 ${size / 2}px ${color}`; // 光の輪もサイズに合わせて調整
     part.style.width = `${size}px`;
     part.style.height = `${size}px`;
     part.style.left = `${x}px`;
     part.style.top = `${y}px`;
 
-    const duration = Math.random() * 2.0 + 2.0;
+    const duration = Math.random() * (maxDuration - minDuration) + minDuration;
     part.style.animation = `explode ${duration}s ease-out forwards`;
-    part.style.animationDelay = `${Math.random() * 1.0}s`;
+    part.style.animationDelay = `${Math.random() * (maxDelay - minDelay) + minDelay}s`;
 
     container.appendChild(part);
 
     // 演出後に削除
     setTimeout(() => {
       part.remove();
-    }, (duration + 1.0) * 1000);
+    }, (duration + maxDelay) * 1000); // 最大遅延時間も考慮して削除
   }
+}
+
+/* --- シークレット用：花吹雪演出 --- */
+function launchFlowerShower() {
+    const container = $.fireworksContainer; // 既存のコンテナを流用
+    if (!container) return;
+
+    const count = 50; // 花びらの数
+
+    for (let i = 0; i < count; i++) {
+        const petal = document.createElement('div');
+        petal.className = 'flower-petal';
+        
+        // ランダムな位置と揺れ
+        const startLeft = Math.random() * 100; // 画面横幅の%
+        const swayAmount = (Math.random() - 0.5) * 200 + 'px'; // 左右の揺れ幅
+        const duration = Math.random() * 3 + 4; // 4〜7秒かけて落ちる
+        const delay = Math.random() * 2;
+
+        petal.style.left = startLeft + '%';
+        petal.style.top = '-10px';
+        petal.style.setProperty('--sway', swayAmount); // CSS変数をJSから渡す
+        
+        petal.style.animation = `flower-fall ${duration}s linear ${delay}s forwards`;
+
+        container.appendChild(petal);
+
+        // アニメーション終了後に削除
+        setTimeout(() => {
+            petal.remove();
+        }, (duration + delay) * 1000);
+    }
 }
 
 /* ---------------------------
