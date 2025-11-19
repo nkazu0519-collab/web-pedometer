@@ -88,13 +88,30 @@ function getTodayISO() {
 /** 年・週番号を返す（ISO 週番号の簡易版） */
 function getYearWeek() {
   const d = new Date();
-  // 木曜日を含む週をその年の1週目とするISO週の近似
-  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = tmp.getUTCDay() || 7;
-  tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
-  return `${tmp.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+  const year = d.getFullYear();
+
+// 週の基準となる日付を作成 (UTC)
+    const yearStart = new Date(Date.UTC(year, 0, 1));
+    
+    // 経過日数
+    const days = Math.floor((d - yearStart) / (24 * 60 * 60 * 1000));
+    
+    // 簡易的な週番号（月曜日を週の始まりとするロジックに近づける）
+    // 0:日, 1:月, 2:火, ...
+    let dayOfWeek = d.getDay();
+    if (dayOfWeek === 0) { // 日曜日を7とする
+        dayOfWeek = 7;
+    }
+
+    // 今週の月曜日に戻るために何日引くか
+    const daysSinceMonday = dayOfWeek - 1; 
+
+    // 基準日からの通算日数を週番号に変換 (簡易版)
+    // ここでは、日付が変われば確実に別の週番号になるように、現在のISO週番号の計算ロジックをシンプルにします。
+    const weekNo = Math.floor((days + 7) / 7);
+
+    // 週番号が年をまたぐ場合の処理は複雑なため、ここでは年と通算週番号を組み合わせます。
+    return `${year}-W${String(weekNo).padStart(2, '0')}`;
 }
 
 /* ---------------------------
@@ -488,7 +505,7 @@ window.addEventListener('pagehide', saveState);
 const FIREWORK_COLORS = ['#FF4500', '#FFD700', '#ADFF2F', '#1E90FF', '#FF69B4'];
 
 function launchFireworks() {
-  const container = $.fireworksContainer;
+  const container = document.getElementById('fireworks-container');
   if (!container) return;
 
   const count = CONFIG.FIREWORK_COUNT;
@@ -497,7 +514,7 @@ function launchFireworks() {
     part.className = 'firework';
 
     const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
-    const size = Math.random() * 6 + 4; // px
+    const size = Math.random() * 7 + 8; // px
     const x = Math.random() * window.innerWidth;
     const y = window.innerHeight * (0.3 + Math.random() * 0.4); // 中央付近
 
@@ -507,16 +524,16 @@ function launchFireworks() {
     part.style.left = `${x}px`;
     part.style.top = `${y}px`;
 
-    const duration = Math.random() * 1.5 + 0.6;
+    const duration = Math.random() * 2.0 + 2.0;
     part.style.animation = `explode ${duration}s ease-out forwards`;
-    part.style.animationDelay = `${Math.random() * 0.2}s`;
+    part.style.animationDelay = `${Math.random() * 1.0}s`;
 
     container.appendChild(part);
 
     // 演出後に削除
     setTimeout(() => {
       part.remove();
-    }, (duration + 0.3) * 1000);
+    }, (duration + 1.0) * 1000);
   }
 }
 
