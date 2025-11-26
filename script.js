@@ -349,7 +349,7 @@ function onMissionAchieved(achievedMission) { // ★引数：達成したミッ�
     if (bonusLi) bonusLi.classList.add('completed');
     if (bonusCheck) bonusCheck.style.opacity = 1;
 
-    // ★神の領域ミッションの場合の特別な演出★
+    // ★シークレットミッションの場合の特別な演出★
     if (achievedMission.id === 103) { // id: 103 は「神の領域」
       $.message.textContent = `👑 【神の領域到達】${achievedMission.text}！おめでとうございます！ 👑`;
       launchFireworks(true); // ★引数 true で豪華版花火をリクエスト
@@ -618,7 +618,7 @@ function launchFlowerShower() {
     const container = $.fireworksContainer; // 既存のコンテナを流用
     if (!container) return;
 
-    const count = 50; // 花びらの数
+    const count = 60; // 花びらの数
 
     for (let i = 0; i < count; i++) {
         const petal = document.createElement('div');

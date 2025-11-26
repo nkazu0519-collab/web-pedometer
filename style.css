@@ -229,3 +229,25 @@ button {
         opacity: 0;
     }
 }
+
+/* --- 隠し演出：花吹雪 --- */
+.flower-petal {
+    position: absolute;
+    width: 15px;
+    height: 10px;
+    background-color: #ffc0cb; /* ピンク */
+    border-radius: 15px 0 15px 0; 
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+@keyframes flower-fall {
+    0% {
+        transform: translateY(-10vh) rotate(0deg) translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(110vh) rotate(360deg) translateX(var(--sway));
+        opacity: 0;
+    }
+}
