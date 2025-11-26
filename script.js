@@ -670,7 +670,7 @@ function initApp() {
   // ボタンイベント
   $.startBtn && $.startBtn.addEventListener('click', startCounting);
   $.stopBtn && $.stopBtn.addEventListener('click', stopCounting);
-  $.resetBtn && $.resetBtn.addEventListener('click', resetAll);
+  /* $.resetBtn && $.resetBtn.addEventListener('click', resetAll); */
 
   // ページ離脱時に保存（補助）
   window.addEventListener('beforeunload', saveState);
