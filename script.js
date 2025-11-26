@@ -51,7 +51,7 @@ const $ = {
   stepCount: document.getElementById('step-count'),
   startBtn: document.getElementById('start-button'),
   stopBtn: document.getElementById('stop-button'),
-  resetBtn: document.getElementById('reset-button'),
+  /* resetBtn: document.getElementById('reset-button'), */
   currentQuestContainer: document.getElementById('current-quest-container'),
   bonusQuestList: document.getElementById('bonus-quests-list'),
   message: document.getElementById('message'),
@@ -528,7 +528,7 @@ function unregisterMotionListener() {
    - カウント中なら停止
    - ストレージも更新
    --------------------------- */
-function resetAll() {
+/* function resetAll() {
   if (state.isCounting) stopCounting();
 
   state.steps = 0;
@@ -552,7 +552,7 @@ function resetAll() {
   renderCurrentMission();
   renderBonusMissions();
   saveState();
-}
+} */
 
 /* ---------------------------
    visibility / pagehide 対策
@@ -659,7 +659,7 @@ function initApp() {
   // ボタンイベント
   $.startBtn && $.startBtn.addEventListener('click', startCounting);
   $.stopBtn && $.stopBtn.addEventListener('click', stopCounting);
-  $.resetBtn && $.resetBtn.addEventListener('click', resetAll);
+  /* $.resetBtn && $.resetBtn.addEventListener('click', resetAll); */
 
   // ページ離脱時に保存（補助）
   window.addEventListener('beforeunload', saveState);
