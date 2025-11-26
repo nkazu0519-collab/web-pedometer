@@ -321,51 +321,58 @@ function updateProgress() {
 /* ---------------------------
    ミッション完了処理ガード付き (デイリー/ボーナス対応)
    --------------------------- */
-function onMissionAchieved(achievedMission) { // ★引数：達成したミッション情報を受け取る
-  if (state.missionCompletedLock) return; // 二重発火防止
+function onMissionAchieved(achievedMission) {
+  if (state.missionCompletedLock) return;
   state.missionCompletedLock = true;
 
-  // UI 更新（チェック表示・クラス追加）
-  // デイリーミッションの場合
-  if (achievedMission.id < 100) { // IDが100未満ならデイリーミッションと判断
+  // -----------------------------------------
+  // 1. デイリークエストの場合 (ID < 100)
+  // -----------------------------------------
+  if (achievedMission.id < 100) {
     const currentLi = document.getElementById('current-quest') || $.currentQuestContainer.querySelector('.quest-item');
     const check = document.getElementById('quest-check');
+    
     if (currentLi) currentLi.classList.add('completed');
     if (check) check.style.opacity = 1;
 
     $.message.textContent = `🎉 クエスト達成: ${achievedMission.text}！`;
     launchFireworks(); // 通常の花火
     
-    // 次のデイリーミッションへ（ロック解除は moveToNextMission 内で行う）
+    // 次のミッションへ遷移
     setTimeout(() => {
       moveToNextMission();
       state.missionCompletedLock = false;
     }, CONFIG.TRANSITION_DELAY);
 
-  } else { // ボーナスミッションの場合
+  } 
+  // -----------------------------------------
+  // 2. チャレンジクエストの場合 (ID >= 100)
+  // -----------------------------------------
+  else { 
     const bonusLi = document.getElementById(`bonus-quest-${achievedMission.id}`);
     const bonusCheck = bonusLi ? bonusLi.querySelector('.quest-check') : null;
 
     if (bonusLi) bonusLi.classList.add('completed');
     if (bonusCheck) bonusCheck.style.opacity = 1;
 
-    // ★シークレットミッションの場合の特別な演出★
-    if (achievedMission.id === 103) { // id: 103 は「神の領域」
-      $.message.textContent = `👑 【神の領域到達】${achievedMission.text}！おめでとうございます！ 👑`;
-      launchFireworks(true); // ★引数 true で豪華版花火をリクエスト
-      launchFlowerShower(); // ★花吹雪を呼び出す
+    if (achievedMission.id === 103) { 
+      // A. シークレットミッション（神の領域）: 豪華演出のまま
+      $.message.textContent = `👑 【神の領域到達】${achievedMission.text}！おめでとう！ 👑`;
+      launchFireworks(true); // 豪華花火
+      launchFlowerShower();  // 花吹雪
     } else {
-      $.message.textContent = `🎉 ボーナスクエスト達成: ${achievedMission.text}！`;
-      launchFireworks(); // 通常の花火
+      // B. 通常のチャレンジクエスト: デイリーと同じ花火を追加！
+      $.message.textContent = `🎉 チャレンジ達成: ${achievedMission.text}！`;
+      launchFireworks(); // ★これを追加！これで花火が上がります★
     }
     
-    saveState(); // ボーナスの達成も保存
+    saveState(); 
 
-    // ボーナスミッションは自動遷移がないため、一定時間後にメッセージをクリアしロックを解除
+    // ロック解除（画面遷移はしない）
     setTimeout(() => {
-      $.message.textContent = ''; // メッセージをクリア
+      $.message.textContent = ''; 
       state.missionCompletedLock = false;
-    }, CONFIG.TRANSITION_DELAY * 1.5); // 少し長めにメッセージを表示
+    }, CONFIG.TRANSITION_DELAY * 1.5); 
   }
 }
 
