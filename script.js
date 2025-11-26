@@ -66,7 +66,7 @@ const MISSIONS = [
   { id: 2, goal: 500, text: 'ウォーミングアップ: 500歩達成', icon: '🏃' },
   { id: 3, goal: 1000, text: '基礎訓練: 1,000歩達成', icon: '⛰️' },
   { id: 4, goal: 5000, text: 'デイリー目標: 5,000歩達成', icon: '🏅' },
-  { id: 5, goal: 7777, text: 'シークレットボーナス: 7,777歩！', icon: '🎁' },
+  { id: 5, goal: 7777, text: 'チャレンジャー: 7,777歩！', icon: '🎁' },
 ];
 
 /* ---------------------------
@@ -74,15 +74,15 @@ const MISSIONS = [
    --------------------------- */
 const BONUS_MISSIONS = [
   { id: 101, type: 'consecutive', goal: 5, targetSteps: 100, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
-  { id: 102, type: 'weekly', goal: 35000, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
+  { id: 102, type: 'weekly', goal: 150, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
   // シークレットミッション (unlockAt: 35000 が解放条件)
   { 
     id: 103, 
     type: 'weekly', 
-    goal: 50000, 
+    goal: 200, 
     text: '【シークレット】神の領域: 週間50,000歩', 
     icon: '👑',
-    unlockAt: 35000 // 週間歩数が35,000を超えたら表示する設定
+    unlockAt: 150 // 週間歩数が35,000を超えたら表示する設定
   },
 ];
 
