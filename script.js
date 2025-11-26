@@ -80,7 +80,7 @@ const BONUS_MISSIONS = [
     id: 103, 
     type: 'weekly', 
     goal: 200, 
-    text: '【シークレット】神の領域: 週間50,000歩', 
+    text: '【シークレット】: 週間50,000歩', 
     icon: '👑',
     unlockAt: 150 // 週間歩数が35,000を超えたら表示する設定
   },
