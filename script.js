@@ -613,36 +613,40 @@ function launchFireworks(isDeluxe = false) { // ★引数 isDeluxe を追加（�
   }
 }
 
-/* --- シークレット用：花吹雪演出 --- */
+/* ---------------------------
+   花吹雪（シークレット用演出）
+   --------------------------- */
 function launchFlowerShower() {
-    const container = $.fireworksContainer; // 既存のコンテナを流用
-    if (!container) return;
+  // 既存のコンテナを使用
+  const container = $.fireworksContainer; 
+  if (!container) return;
 
-    const count = 60; // 花びらの数
+  const count = 60; // 花びらの数
 
-    for (let i = 0; i < count; i++) {
-        const petal = document.createElement('div');
-        petal.className = 'flower-petal';
-        
-        // ランダムな位置と揺れ
-        const startLeft = Math.random() * 100; // 画面横幅の%
-        const swayAmount = (Math.random() - 0.5) * 200 + 'px'; // 左右の揺れ幅
-        const duration = Math.random() * 3 + 4; // 4〜7秒かけて落ちる
-        const delay = Math.random() * 2;
+  for (let i = 0; i < count; i++) {
+    const petal = document.createElement('div');
+    petal.className = 'flower-petal';
+    
+    // ランダムな位置と揺れ
+    const startLeft = Math.random() * 100; // 画面横幅の%
+    const swayAmount = (Math.random() - 0.5) * 200 + 'px'; // 左右の揺れ幅
+    const duration = Math.random() * 3 + 4; // 4〜7秒かけて落ちる
+    const delay = Math.random() * 2;
 
-        petal.style.left = startLeft + '%';
-        petal.style.top = '-10px';
-        petal.style.setProperty('--sway', swayAmount); // CSS変数をJSから渡す
-        
-        petal.style.animation = `flower-fall ${duration}s linear ${delay}s forwards`;
+    petal.style.left = startLeft + '%';
+    petal.style.top = '-10px';
+    // CSS変数をJSから渡す（アニメーション内で var(--sway) として使う）
+    petal.style.setProperty('--sway', swayAmount); 
+    
+    petal.style.animation = `flower-fall ${duration}s linear ${delay}s forwards`;
 
-        container.appendChild(petal);
+    container.appendChild(petal);
 
-        // アニメーション終了後に削除
-        setTimeout(() => {
-            petal.remove();
-        }, (duration + delay) * 1000);
-    }
+    // アニメーション終了後に削除
+    setTimeout(() => {
+        petal.remove();
+    }, (duration + delay) * 1000);
+  }
 }
 
 /* ---------------------------
