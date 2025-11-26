@@ -74,15 +74,15 @@ const MISSIONS = [
    --------------------------- */
 const BONUS_MISSIONS = [
   { id: 101, type: 'consecutive', goal: 5, targetSteps: 100, text: '連続記録チャレンジャー: 5日連続達成', icon: '🔥' },
-  { id: 102, type: 'weekly', goal: 150, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
+  { id: 102, type: 'weekly', goal: 10, text: '週間長距離ランナー: 35,000歩達成', icon: '🗓️' },
   // シークレットミッション (unlockAt: 35000 が解放条件)
   { 
     id: 103, 
     type: 'weekly', 
-    goal: 200, 
+    goal: 20, 
     text: '【シークレット】: 週間50,000歩', 
     icon: '👑',
-    unlockAt: 150 // 週間歩数が35,000を超えたら表示する設定
+    unlockAt: 10 // 週間歩数が35,000を超えたら表示する設定
   },
 ];
 
