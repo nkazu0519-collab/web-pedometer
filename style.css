@@ -9,9 +9,7 @@
     --success-green: #28a745;
 }
 
-/* -------------------------------
-   全体
--------------------------------- */
+/* 全体 */
 body {
     background-color: var(--bg-green);
     font-family: Arial, sans-serif;
@@ -25,9 +23,7 @@ body {
     text-align: center;
 }
 
-/* ===============================
-   タイトル
-================================ */
+/* タイトル */
 h1 {
     color: var(--title-color);
     font-size: clamp(28px, 8vw, 64px);
@@ -42,9 +38,7 @@ h2 {
     margin-bottom: 1vh;         /* ← 余白を縮小 */
 }
 
-/* ===============================
-   歩数表示エリア
-================================ */
+/* 歩数表示エリア */
 #step-count {
     font-size: clamp(60px, 20vw, 140px);
     font-weight: 900;
@@ -59,9 +53,7 @@ h2 {
     color: #444;
 }
 
-/* ===============================
-   メッセージ
-================================ */
+/* メッセージ */
 #message {
     font-size: clamp(18px, 5vw, 36px);
     color: var(--success-green);
@@ -70,9 +62,7 @@ h2 {
     margin: 0;
 }
 
-/* ===============================
-   クエスト表示
-================================ */
+/* クエスト表示 */
 
 /* クエストUL：中央配置 */
 #current-quest-container,
@@ -164,9 +154,7 @@ h2 {
     transition: width 0.3s ease;
 }
 
-/* ===============================
-   ボタン
-================================ */
+/* ボタン */
 #button-container {
     display: flex;
     justify-content: center;
@@ -195,9 +183,7 @@ button {
     color: white;
 }
 
-/* ===============================
-   花火演出
-================================ */
+/* 花火演出 */
 #fireworks-container {
     position: fixed;
     top: 0;
